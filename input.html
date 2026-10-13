@@ -1,0 +1,1382 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>PSF 설문조사</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.css" />
+
+  <link rel="stylesheet" href="/static/input.css" />
+</head>
+
+<body>
+
+  <div id="customModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <p id="modalMessage">메시지</p>
+      <button onclick="closeModal()">확인</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="title-bar">
+        <p class="title-type">사고 발생 확률 예측 설문조사</p>
+        <button type="button" class="scenario-trigger">시나리오 선택</button>
+      </div>
+
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <!-- 기관사, 관제사, 작업자 -->
+    <div class="question-group">
+      <div class="role-selection">
+        <p class="role-title">직종을 선택해주세요.</p>
+        <div class="role-buttons">
+          <button type="button" class="role-btn" data-role="기관사" onclick="selectRole(this)">기관사</button>
+          <button type="button" class="role-btn" data-role="관제사" onclick="selectRole(this)">관제사</button>
+          <button type="button" class="role-btn" data-role="정비사" onclick="selectRole(this)">정비사</button>
+          <button type="button" class="role-btn" data-role="선로작업자" onclick="selectRole(this)">선로작업자</button>
+        </div>
+      </div>
+    </div>
+    <!-- PSF 1 -->
+    <div class="house">
+      <div class="house-title">1. 귀하가 느끼는 작업 부하 수준은 어느 정도에 해당합니까?</div>
+      <div class="question-group">
+        <label for="workStartedAt" class="label-text">현재 근무 시작 일시 (한국시간)</label>
+        <input type="datetime-local" id="workStartedAt">
+        <p class="submit-hint">시간별 예측 그래프에 사용합니다. 상세 결과 화면에서 입력해도 됩니다.</p>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">근무시간</span>
+          <select class="room-select" id="worktimeSelect">
+            <option value="" disabled selected hidden>근무시간을 선택하세요.</option>
+            <option value="room1">8시간 미만 근무할 경우</option>
+            <option value="room2">8~12시간 사이에 근무할 경우</option>
+            <option value="room3">12시간 이상 근무할 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업시간</span>
+          <select class="room-select" id="workhourSelect">
+            <option value="" disabled selected hidden>작업시간을 선택하세요.</option>
+            <option value="room1">근무시간의 50% 미만일 경우</option>
+            <option value="room2">근무시간의 50~80% 사이일 경우</option>
+            <option value="room3">근무시간의 80% 이상일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">수면시간</span>
+          <select class="room-select" id="sleeptimeSelect">
+            <option value="" disabled selected hidden>수면시간을 선택하세요.</option>
+            <option value="room1">8시간 이상인 경우</option>
+            <option value="room2">6~8시간 사이인 경우</option>
+            <option value="room3">6시간 이내인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업 허용 시간</span>
+          <select class="room-select" id="workpermissiontimeSelect">
+            <option value="" disabled selected hidden>작업 허용 시간을 선택하세요.</option>
+            <option value="room1">평상 시와 동일 하거나 느리게 해도 될 만큼의 여유시간이 주어진 상황일 경우</option>
+            <option value="room2">평상 시보다 25%이내로 빠르게 해야 하는 상황일 경우</option>
+            <option value="room3">평상 시보다 25% 이상 빠르게 해야 하는 상황일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">근무시간대</span>
+          <select class="room-select" id="workinghoursSelect">
+            <option value="" disabled selected hidden>근무시간대를 선택하세요.</option>
+            <option value="room1">9시~18시인 경우</option>
+            <option value="room2">야간근무 심야조</option>
+            <option value="room3">야간근무 비심야조</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+    <!-- PSF 2 -->
+    <div class="house">
+      <div class="house-title">2. 귀하가 느끼는 장비의 품질(성능, 상태, 적합도 등)수준은 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">장비 가용성(접근성)</span>
+          <select class="room-select" id="systemabailabilitySelect">
+            <option value="" disabled selected hidden>장비 가용성을 선택하세요.</option>
+            <option value="room1">업무에 필요한 장비의 가용성이 높은 경우</option>
+            <option value="room2">업무에 필요한 장비의 가용성이 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업 도구의 적절성</span>
+          <select class="room-select" id="suitability-of-work-tool-select">
+            <option value="" disabled selected hidden>작업도구의 적절성을 선택하세요.</option>
+            <option value="room1">사용하는 작업도구의 적절성이 우수한 경우</option>
+            <option value="room2">사용하는 작업도구의 적절성이 보통한 경우</option>
+            <option value="room3">사용하는 작업도구의 적절성이 미흡한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">컴퓨터 지원 시스템의 적절성</span>
+          <select class="room-select" id="adequacy-of-computer-aided-system-select">
+            <option value="" disabled selected hidden>컴퓨터 시스템의 적절성을 선택하세요.</option>
+            <option value="room1">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 우수한 경우</option>
+            <option value="room2">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 보통인 경우</option>
+            <option value="room3">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 미흡한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">장비의 사용성</span>
+          <select class="room-select" id="usability-of-equipment-select">
+            <option value="" disabled selected hidden>장비 사용성을 선택하세요.</option>
+            <option value="room1">업무에 필요한 장비의 사용성이 우수한 경우</option>
+            <option value="room2">업무에 필요한 장비의 사용성이 보통인 경우</option>
+            <option value="room3">업무에 필요한 장비의 사용성이 미흡한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">장비 사용 매뉴얼의 질</span>
+          <select class="room-select" id="quality-of-equipment-user-manual-select">
+            <option value="" disabled selected hidden>장비 사용 매뉴얼의 질을 선택하세요.</option>
+            <option value="room1">장비 사용 매뉴얼의 질이 우수한 경우</option>
+            <option value="room2">장비 사용 매뉴얼의 질이 보통인 경우</option>
+            <option value="room3">장비 사용 매뉴얼의 질이 미흡한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">타 기기와의 연계성</span>
+          <select class="room-select" id="connectivity-with-other-devices-select">
+            <option value="" disabled selected hidden>타 기기와의 연계성을 선택하세요.</option>
+            <option value="room1">사용하는 장비가 타 기기와의 연계성이 우수한 경우</option>
+            <option value="room2">사용하는 장비가 타 기기와의 연계성이 보통인 경우</option>
+            <option value="room3">사용하는 장비가 타 기기와의 연계성이 미흡한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">유지보수의 적절성</span>
+          <select class="room-select" id="adequacy-of-maintenance-select">
+            <option value="" disabled selected hidden>유지보수의 적절성을 선택하세요.</option>
+            <option value="room1">사용하는 장비가 매우 적절하게 유지보수 되는 경우</option>
+            <option value="room2">사용하는 장비가 일반적으로 유지보수 되는 경우</option>
+            <option value="room3">사용하는 장비가 미흡하게 유지보수 되는 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 3 -->
+    <div class="house">
+      <div class="house-title">3. 귀하가 느끼는 절차서의 품질 수준은 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차의 유무(가용성)</span>
+          <select class="room-select" id="presence-or-absence-of-procedure-select">
+            <option value="" disabled selected hidden>(직무)절차의 유무(가용성)을 선택하세요.</option>
+            <option value="room1">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 높은 경우</option>
+            <option value="room2">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차 기술의 복잡성</span>
+          <select class="room-select" id="complexity-of-procedural-techniques-select">
+            <option value="" disabled selected hidden>(직무)절차 기술(description)의 복잡성을 선택하세요.</option>
+            <option value="room1">직무를 수행하는 데 필요한 절차의 복잡성이 낮은 경우</option>
+            <option value="room2">직무를 수행하는 데 필요한 절차의 복잡성이 보통인 경우</option>
+            <option value="room3">직무를 수행하는 데 필요한 절차의 복잡성이 높은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차의 명료성(구체성)</span>
+          <select class="room-select" id="clarity-of-procedure-select">
+            <option value="" disabled selected hidden>(직무)절차의 명료성(구체성)을 선택하세요.</option>
+            <option value="room1">직무 절차서 내용의 명료성이 높은 경우</option>
+            <option value="room2">직무 절차서 내용의 명료성이 보통인 경우</option>
+            <option value="room3">직무 절차서 내용의 명료성이 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차의 적절성</span>
+          <select class="room-select" id="adequacy-of-procedure-select">
+            <option value="" disabled selected hidden>(직무)절차의 적절성(완전성 포함)을 선택하세요.</option>
+            <option value="room1">직무 절차서 내용이 매우 적절하게 업무에 도움이 되는 경우</option>
+            <option value="room2">직무 절차서 내용이 전반적으로 적절하게 업무에 도움이 되는 경우</option>
+            <option value="room3">직무 절차서 내용이 부적절하거나 미흡하게 제공되는 경우</option>
+          </select>
+        </label>
+      </div>
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차의 일관성</span>
+          <select class="room-select" id="consistency-of-procedure-select">
+            <option value="" disabled selected hidden>(직무)절차의 일관성을 선택하세요.</option>
+            <option value="room1">직무 절차서 내용이 매우 일관되게 표현되어 있는 경우</option>
+            <option value="room2">직무 절차서 내용이 전반적으로 일관되게 표현되어 있는 경우</option>
+            <option value="room3">직무 절차서 내용의 일관성이 부족한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(직무)절차의 추적성</span>
+          <select class="room-select" id="process-traceability-select">
+            <option value="" disabled selected hidden>(직무)절차의 추적성을 선택하세요.</option>
+            <option value="room1">직무 절차서 추적성이 높은 경우</option>
+            <option value="room2">직무 절차서 추적성이 보통인 경우</option>
+            <option value="room3">직무 절차서 추적성이 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 4 -->
+    <div class="house">
+      <div class="house-title">4. 귀하가 느끼는 교육/훈련 성과 및 수준은 어느 정도입니까?</div>
+      <div class="question-group">
+        <label for="trainingElapsedMonths" class="label-text">마지막 직무 교육 후 경과 개월 수</label>
+        <input type="number" id="trainingElapsedMonths" min="0" step="any" required placeholder="예: 6">
+        <p class="submit-hint">교육·훈련 예측에는 이 경과 개월 수가 사용됩니다.</p>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">교육/훈련 프로그램 적절성</span>
+          <select class="room-select" id="educational-program-suitability-select">
+            <option value="" disabled selected hidden>교육/훈련 프로그램 적절성을 선택하세요.</option>
+            <option value="room1">교육/훈련 프로그램이 적절할 경우</option>
+            <option value="room2">교육/훈련 프로그램에 개선할 필요가 있을 경우</option>
+            <option value="room3">교육/훈련 프로그램이 적절하지 않을 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">교육 주기(빈도)</span>
+          <select class="room-select" id="educational-cycle-select">
+            <option value="" disabled selected hidden>교육 주기(빈도)를 선택하세요.</option>
+            <option value="room1">교육/훈련 주기(빈도)가 1년 미만일 경우</option>
+            <option value="room2">교육/훈련 주기(빈도)가 1~3년 사이일 경우</option>
+            <option value="room3">교육/훈련 주기(빈도)가 3년 이상일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">상황에 대한 경험 정도</span>
+          <select class="room-select" id="degree-of-experience-with-the-situation-select">
+            <option value="" disabled selected hidden>상황에 대한 경험 정도를 선택하세요.</option>
+            <option value="room1">해야 하는 일의 90% 이상을 경험한 경우</option>
+            <option value="room2">해야 하는 일의 70~90%를 경험한 경우</option>
+            <option value="room3">해야 하는 일의 30% 이상을 경험하지 못한 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">직무능력 평가 빈도</span>
+          <select class="room-select" id="frequency-of-job-competency-evaluation-select">
+            <option value="" disabled selected hidden>직무능력 평가 빈도를 선택하세요.</option>
+            <option value="room1">직무능력 평가 빈도가 6개월일 경우</option>
+            <option value="room2">직무능력 평가 빈도가 1년일 경우</option>
+            <option value="room3">직무능력 평가 빈도가 3년일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">시스템 지식의 숙련도</span>
+          <select class="room-select" id="system-knowledge-proficiency-select">
+            <option value="" disabled selected hidden>시스템 지식(원리적 지식)의 숙련도를 선택하세요.</option>
+            <option value="room1">시스템 지식(원리적 지식)의 숙련도가 높은 경우</option>
+            <option value="room2">시스템 지식(원리적 지식)의 숙련도가 보통인 경우</option>
+            <option value="room3">시스템 지식(원리적 지식)의 숙련도가 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">절차적 지식의 숙련도</span>
+          <select class="room-select" id="proficiency-in-procedural-knowledge-select">
+            <option value="" disabled selected hidden>절차적 지식의 숙련도를 선택하세요.</option>
+            <option value="room1">절차적 지식의 숙련도가 높을 경우</option>
+            <option value="room2">절차적 지식의 숙련도가 보통인 경우</option>
+            <option value="room3">절차적 지식의 숙련도가 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">장비 사용 지식의 숙련도</span>
+          <select class="room-select" id="proficiency-in-equipment-use-select">
+            <option value="" disabled selected hidden>장비 사용 지식의 숙련도를 선택하세요.</option>
+            <option value="room1">장비 사용 지식의 숙련도가 높을 경우</option>
+            <option value="room2">장비 사용 지식의 숙련도가 보통인 경우</option>
+            <option value="room3">장비 사용 지식의 숙련도가 낮은 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 5 -->
+    <div class="house">
+      <div class="house-title">5. 귀하가 느끼는 의사소통은 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사소통 메시지의 길이</span>
+          <select class="room-select" id="length-of-communication-message-select">
+            <option value="" disabled selected hidden>의사소통 메시지의 길이를 선택하세요.</option>
+            <option value="room1">의사소통 메시지 길이가 짧을(단문) 경우</option>
+            <option value="room2">의사소통 메시지 길이가 보통일(중문) 경우</option>
+            <option value="room3">의사소통 메시지 길이가 길(복문) 경우 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사소통을 위한 장비/기기의 적절성</span>
+          <select class="room-select" id="adequacy-of-equipment-for-communication-select">
+            <option value="" disabled selected hidden>의사소통을 위한 장비/기기의 적절성을 선택하세요.</option>
+            <option value="room1">의사소통을 하기 위한 장비/기기가 적절한 상태일 경우</option>
+            <option value="room2">의사소통을 하기 위한 장비/기기가 보통 수준인 상태일 경우</option>
+            <option value="room3">의사소통을 하기 위한 장비/기기가 부적절한 상태일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사소통을 위한 전문용어 숙지 필요성</span>
+          <select class="room-select" id="importance-of-communication-select">
+            <option value="" disabled selected hidden>의사소통을 위한 전문용어 숙지 필요성을 선택하세요.</option>
+            <option value="room1">의사소통을 하기 위해 전문용어를 숙지할 필요가 없는 경우</option>
+            <option value="room2">의사소통을 하기 위해 전문용어를 부분적으로 숙지할 필요가 있는 경우</option>
+            <option value="room3">의사소통을 하기 위해 전문용어를 항상 숙지할 필요가 있는 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사소통 프로토콜의 구체성</span>
+          <select class="room-select" id="specificity-of-communication-protocols-select">
+            <option value="" disabled selected hidden>의사소통 프로토콜의 구체성을 선택하세요.</option>
+            <option value="room1">의사소통 프로토콜이 매우 구체적일 경우</option>
+            <option value="room2">의사소통 프로토콜이 일부만 구체적일 경우</option>
+            <option value="room3">의사소통 프로토콜이 구체적이지 않을 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사소통자 간 상황인식 공유 정도</span>
+          <select class="room-select" id="shared-understanding-select">
+            <option value="" disabled selected hidden>의사소통자 간 상황인식 공유 정도를 선택하세요.</option>
+            <option value="room1">의사소통자 간의 상황인식 공유가 잘 되어 있을 경우</option>
+            <option value="room2">의사소통자 간의 상황인식 공유가 부분적으로 되어 있을 경우</option>
+            <option value="room3">의사소통자 간의 상황인식 공유가 되지 않을 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">팀/조직 의사소통 자율성</span>
+          <select class="room-select" id="organization-communication-autonomy-select">
+            <option value="" disabled selected hidden>팀/조직 의사소통 자율성을 선택하세요.</option>
+            <option value="room1">팀/조직 의사소통 자율성이 높을 경우</option>
+            <option value="room2">팀/조직 의사소통 자율성이 보통일 경우</option>
+            <option value="room3">팀/조직 의사소통 자율성이 낮을 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 6 -->
+    <div class="house">
+      <div class="house-title">6. 귀하가 느끼는 업무 수행 환경은 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">풍속</span>
+          <select class="room-select" id="work-performance-environment-select">
+            <option value="" disabled selected hidden>풍속을 선택하세요.</option>
+            <option value="room1">풍속이 10m/s 미만인 경우</option>
+            <option value="room2">풍속 10m/s 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">비</span>
+          <select class="room-select" id="rain-select">
+            <option value="" disabled selected hidden>비를 선택하세요.</option>
+            <option value="room1">비가 10mm/h(눈의 경우 1cm/h) 미만</option>
+            <option value="room2">비가 10mm/s(눈의 경우 1cm/s) 이상</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">실외 습도</span>
+          <select class="room-select" id="outdoor-humidity-select">
+            <option value="" disabled selected hidden>실외 습도를 선택하세요.</option>
+            <option value="room1">실외 습도가 90% 이하인 경우</option>
+            <option value="room2">실외 습도가 90% 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">실외 온도</span>
+          <select class="room-select" id="outdoor-temperature-select">
+            <option value="" disabled selected hidden>실외 온도를 선택하세요.</option>
+            <option value="room1">실외 온도가 35℃(체감 온도) 이하인 경우</option>
+            <option value="room2">실외 온도가 35℃(체감 온도) 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">낙뢰</span>
+          <select class="room-select" id="thunderstroke-select">
+            <option value="" disabled selected hidden>낙뢰를 선택하세요.</option>
+            <option value="room1">낙뢰가 발생하지 않을 경우</option>
+            <option value="room2">낙뢰가 발생할 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">안개</span>
+          <select class="room-select" id="fog-select">
+            <option value="" disabled selected hidden>안개를 선택하세요.</option>
+            <option value="room1">안개가 발생하지 않을 경우</option>
+            <option value="room2">안개가 발생할 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">황사</span>
+          <select class="room-select" id="yellow-dust-select">
+            <option value="" disabled selected hidden>황사를 선택하세요.</option>
+            <option value="room1">황사로 인해 작업자가 숨 쉬기가 불편할 경우</option>
+            <option value="room2">황사로 인해 작업자가 확실히 사물을 볼 수 없는 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업공간 크기</span>
+          <select class="room-select" id="workspace-size-select">
+            <option value="" disabled selected hidden>작업공간 크기를 선택하세요.</option>
+            <option value="room1">작업공간의 크기가 10m³ 이상인 경우</option>
+            <option value="room2">작업공간의 크기가 10m³ 이하인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">마찰계수</span>
+          <select class="room-select" id="coefficient-of-friction-select">
+            <option value="" disabled selected hidden>마찰계수를 선택하세요.</option>
+            <option value="room1">바닥 (정지)마찰계수(SCOF)가 ≥ 0.63인 경우</option>
+            <option value="room2">바닥 (정지)마찰계수(SCOF)가 < 0.63인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">실내 온도</span>
+          <select class="room-select" id="indoor-temperature-select">
+            <option value="" disabled selected hidden>실내 온도를 선택하세요.</option>
+            <option value="room1">실내 온도가 17℃ 이하인 경우</option>
+            <option value="room2">실내 온도가 17~28℃인 경우</option>
+            <option value="room3">실내 온도가 28℃ 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">실내 습도</span>
+          <select class="room-select" id="indoor-humidity-select">
+            <option value="" disabled selected hidden>실내 습도를 선택하세요.</option>
+            <option value="room1">실내 습도가 40% 이하인 경우</option>
+            <option value="room2">실내 습도가 40~75%인 경우</option>
+            <option value="room3">실내 습도가 75% 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">통풍</span>
+          <select class="room-select" id="gout-select">
+            <option value="" disabled selected hidden>통풍을 선택하세요.</option>
+            <option value="room1">통풍이 잘 될 경우</option>
+            <option value="room2">통풍이 잘 되지 않을 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">소음</span>
+          <select class="room-select" id="noise-select">
+            <option value="" disabled selected hidden>소음을 선택하세요.</option>
+            <option value="room1">소음이 85dB 이하인 경우</option>
+            <option value="room2">소음이 85~115dB인 경우</option>
+            <option value="room3">소음이 115dB 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">업무공간 가시성</span>
+          <select class="room-select" id="workspace-visibility-select">
+            <option value="" disabled selected hidden>업무공간 가시성을 선택하세요.</option>
+            <option value="room1">보통작업을 수행할 정도의 조도가 형성된 경우</option>
+            <option value="room2">정밀작업을 수행할 정도의 조도가 형성된 경우</option>
+            <option value="room3">초정밀작업을 수행할 정도의 조도가 형성된 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 7 -->
+    <div class="house">
+      <div class="house-title">7. 귀하가 느끼는 작업 절차는 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업 관리 및 감독 적절성</span>
+          <select class="room-select" id="task-management-select">
+            <option value="" disabled selected hidden>작업 관리 및 감독 적절성을 선택하세요.</option>
+            <option value="room1">작업 관리 및 감독이 적절하게 이루어진 경우</option>
+            <option value="room2">작업 관리 및 감독이 불완전하게 이루어진 경우</option>
+            <option value="room3">작업 관리 및 감독이 부적절하게 이루어진 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업 계획 적절성</span>
+          <select class="room-select" id="work-plan-select">
+            <option value="" disabled selected hidden>작업 계획 적절성을 선택하세요.</option>
+            <option value="room1">작업 계획이 적절하게 이루어진 경우</option>
+            <option value="room2">작업 계획이 불완전하게 이루어진 경우</option>
+            <option value="room3">작업 계획이 부적절하게 이루어진 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업절차 및 규정</span>
+          <select class="room-select" id="work-procedure-select">
+            <option value="" disabled selected hidden>작업절차 및 규정을 선택하세요.</option>
+            <option value="room1">작업절차 및 규정이 좋은 경우</option>
+            <option value="room2">작업절차 및 규정이 보통인 경우</option>
+            <option value="room3">작업절차 및 규정이 좋지 않은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">역할 분담 명료화</span>
+          <select class="room-select" id="division-of-roles-select">
+            <option value="" disabled selected hidden>역할 분담 명료화를 선택하세요.</option>
+            <option value="room1">역할 분담이 명확한 경우</option>
+            <option value="room2">역할 분담이 모호한 경우</option>
+            <option value="room3">역할 분담이 명확하지 않은 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">작업자간 협업 정도</span>
+          <select class="room-select" id="degree-of-worker-collaboration-select">
+            <option value="" disabled selected hidden>작업자간 협업 정도를 선택하세요.</option>
+            <option value="room1">작업자간 협업이 원활한 경우</option>
+            <option value="room2">작업자간 협업이 제한적인 경우</option>
+            <option value="room3">작업자간 협업이 원활하지 않은 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- PSF 8 -->
+    <div class="house">
+      <div class="house-title">8. 귀하가 느끼는 직무 복잡도는 어느 정도입니까?</div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사결정 목표의 명확성</span>
+          <select class="room-select" id="clarity-of-decision-making-goals-select">
+            <option value="" disabled selected hidden>의사결정 목표의 명확성을 선택하세요.</option>
+            <option value="room1">의사결정이 필요한 상황에서 의사결정 목표가 명확할 경우</option>
+            <option value="room2">의사결정이 필요한 상황에서 의사결정 목표가 명확하지 않을 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사결정 대안의 수</span>
+          <select class="room-select" id="numbers-of-alternatives-select">
+            <option value="" disabled selected hidden>의사결정 대안의 수를 선택하세요.</option>
+            <option value="room1">의사결정 과정에서 선택할 수 있는 대안의 수가 2건 이하인 경우</option>
+            <option value="room2">의사결정 과정에서 선택할 수 있는 대안의 수가 3~4건인 경우</option>
+            <option value="room3">의사결정 과정에서 선택할 수 있는 대안의 수가 5건 이상인 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">의사결정 판단 기준의 수</span>
+          <select class="room-select" id="number-of-decision-making-criteria-select">
+            <option value="" disabled selected hidden>의사결정 판단 기준의 수를 선택하세요.</option>
+            <option value="room1">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 1개일 경우</option>
+            <option value="room2">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 2~3개일 경우</option>
+            <option value="room3">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 4개 이상일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(동시에 처리 되어야 하는)의사결정 수</span>
+          <select class="room-select" id="decision-tree-select">
+            <option value="" disabled selected hidden>의사결정 수를 선택하세요.</option>
+            <option value="room1">동시에 처리되어야 하는 의사결정의 수가 1개일 경우</option>
+            <option value="room2">동시에 처리되어야 하는 의사결정의 수가 2개일 경우</option>
+            <option value="room3">동시에 처리되어야 하는 의사결정의 수가 3개 이상일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">관측되는 정보의 양</span>
+          <select class="room-select" id="amount-of-observed-information-select">
+            <option value="" disabled selected hidden>관측되는 정보의 양을 선택하세요.</option>
+            <option value="room1">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 3개 이하일 경우</option>
+            <option value="room2">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 4~6개일 경우</option>
+            <option value="room3">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 7개 이상일 경우</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">(관측이 불가능하여)추론해야하는 정보의 양</span>
+          <select class="room-select" id="amount-of-information-to-be-deduced-select">
+            <option value="" disabled selected hidden>정보의 양을 선택하세요.</option>
+            <option value="room1">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 1개인 경우</option>
+            <option value="room2">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 2~4개인 경우</option>
+            <option value="room3">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 5개 이상인 경우
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <div class="question-group">
+        <label>
+          <span class="label-text">정보의 불확실성</span>
+          <select class="room-select" id="uncertainty-of-information-select">
+            <option value="" disabled selected hidden>정보의 불확실성을 선택하세요.</option>
+            <option value="room1">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높지 않은 경우</option>
+            <option value="room2">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높은 경우</option>
+          </select>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- 제출 버튼 영역 -->
+    <div class="submit-section">
+      <button type="button" id="submitBtn" class="submit-btn" onclick="submitSurvey()">
+        분석하기
+      </button>
+      <p class="submit-hint">모든 항목을 선택한 후 버튼을 클릭하세요</p>
+    </div>
+
+  </div> <!-- container 닫기 -->
+
+  <div class="scenario-overlay" id="scenarioOverlay" aria-hidden="true">
+    <div class="scenario-panel" role="dialog" aria-modal="true">
+      <p class="scenario-title">시나리오 선택</p>
+      <button type="button" class="scenario-close">닫기</button>
+      <div class="scenario-actions">
+        <button type="button" class="bad-scenario">나쁨 시나리오</button>
+        <button type="button" class="common-scenario">보통 시나리오</button>
+        <button type="button" class="good-scenario">좋음 시나리오</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <img class="loading-image" src="/images/loading.gif" alt="" />
+      <p role="status">설문을 분석하고 있습니다. 잠시 기다려 주세요.</p>
+    </div>
+  </div>
+
+  <script>
+    // 진행률 업데이트
+    const allSelects = document.querySelectorAll('.room-select');
+    const progressFill = document.getElementById('progressFill');
+
+    function updateProgress() {
+      const total = allSelects.length;
+      const answered = Array.from(allSelects).filter(s => s.value !== '').length;
+      const percentage = (answered / total) * 100;
+      progressFill.style.width = percentage + '%';
+
+      // 버튼 활성화 상태 업데이트
+      const submitBtn = document.getElementById('submitBtn');
+      if (answered === total) {
+        submitBtn.classList.add('active');
+      } else {
+        submitBtn.classList.remove('active');
+      }
+    }
+
+    allSelects.forEach(select => {
+      select.addEventListener('change', updateProgress);
+    });
+
+    function buildRadiosFromSelect(select) {
+      const group = select.closest('.question-group');
+      if (!group || group.dataset.radiosBuilt) return;
+
+      const labelText = group.querySelector('.label-text');
+      const options = Array.from(select.options).filter(opt => !opt.disabled && opt.value !== '');
+      if (options.length === 0) return;
+
+      const radioWrap = document.createElement('div');
+      radioWrap.className = 'radio-group';
+      const name = select.id || select.name || `select-${Math.random().toString(36).slice(2)}`;
+
+      options.forEach(opt => {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = name;
+        input.value = opt.value;
+        if (opt.selected) input.checked = true;
+        label.appendChild(input);
+        label.append(opt.textContent);
+        radioWrap.appendChild(label);
+      });
+
+      select.style.display = 'none';
+      group.appendChild(radioWrap);
+      group.dataset.radiosBuilt = 'true';
+
+      radioWrap.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          select.value = radio.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      });
+
+      select.addEventListener('change', () => {
+        const value = select.value;
+        radioWrap.querySelectorAll('input[type="radio"]').forEach(radio => {
+          radio.checked = radio.value === value;
+        });
+      });
+    }
+
+    document.querySelectorAll('select.room-select').forEach(buildRadiosFromSelect);
+
+    // 설문 데이터 수집 및 제출
+    function submitSurvey() {
+      const submitBtn = document.getElementById('submitBtn');
+      if (submitBtn.disabled) return;
+      if (!document.querySelector('.role-btn.active')) {
+        showModal('직종을 선택해 주세요.');
+        return;
+      }
+      if (Array.from(allSelects).some(select => !select.value)) {
+        showModal('모든 설문 항목을 선택해 주세요.');
+        return;
+      }
+      const trainingInput = document.getElementById('trainingElapsedMonths');
+      const trainingMonths = trainingInput.valueAsNumber;
+      if (!Number.isFinite(trainingMonths) || trainingMonths < 0) {
+        showModal('교육 후 경과 개월 수를 0 이상의 숫자로 입력해 주세요.');
+        return;
+      }
+      const workStartedValue = document.getElementById('workStartedAt').value;
+      const workStartedAt = workStartedValue ? `${workStartedValue}+09:00` : null;
+      if (workStartedAt && (!Number.isFinite(Date.parse(workStartedAt)) || Date.parse(workStartedAt) > Date.now())) {
+        showModal('근무 시작 일시는 현재 시각 이전으로 입력해 주세요.');
+        return;
+      }
+      const houses = document.querySelectorAll('.house');
+
+      const optionCodeNumbersByField = {};
+
+      const getValue = (select, fieldKey) => {
+        const selectedText = select?.selectedOptions[0]?.text.trim() || '';
+        const actualOptions = Array.from(select?.options || []).filter(
+          (option) => !option.disabled && option.value !== ''
+        );
+        const selectedIndex = actualOptions.findIndex(
+          (option) => option.text.trim() === selectedText
+        );
+
+        if (selectedIndex === -1) {
+          return undefined;
+        }
+
+        const codeNumbers = optionCodeNumbersByField[fieldKey]
+          || actualOptions.map((_, index) => index + 1);
+        const codeNumber = codeNumbers[selectedIndex];
+
+        return typeof codeNumber === 'number'
+          ? `${fieldKey}.${codeNumber}`
+          : undefined;
+      };
+
+      const data = {};
+
+      // PSF1
+      const psf1House = houses[0];
+      const psf1Selects = psf1House.querySelectorAll('.room-select');
+      data["F.1"] = {
+        'F.1.S.1': getValue(psf1Selects[0], 'F.1.S.1'),
+        'F.1.S.2': getValue(psf1Selects[1], 'F.1.S.2'),
+        'F.1.S.3': getValue(psf1Selects[2], 'F.1.S.3'),
+        'F.1.S.4': getValue(psf1Selects[3], 'F.1.S.4'),
+        'F.1.S.5': getValue(psf1Selects[4], 'F.1.S.5')
+      };
+
+      // PSF2
+      const psf2House = houses[1];
+      const psf2Selects = psf2House.querySelectorAll('.room-select');
+      data["F.2"] = {
+        'F.2.S.1': getValue(psf2Selects[0], 'F.2.S.1'),
+        'F.2.S.2': getValue(psf2Selects[1], 'F.2.S.2'),
+        'F.2.S.3': getValue(psf2Selects[2], 'F.2.S.3'),
+        'F.2.S.4': getValue(psf2Selects[3], 'F.2.S.4'),
+        'F.2.S.5': getValue(psf2Selects[4], 'F.2.S.5'),
+        'F.2.S.6': getValue(psf2Selects[5], 'F.2.S.6'),
+        'F.2.S.7': getValue(psf2Selects[6], 'F.2.S.7')
+      };
+
+      // PSF3
+      const psf3House = houses[2];
+      const psf3Selects = psf3House.querySelectorAll('.room-select');
+      data["F.3"] = {
+        'F.3.S.1': getValue(psf3Selects[0], 'F.3.S.1'),
+        'F.3.S.2': getValue(psf3Selects[1], 'F.3.S.2'),
+        'F.3.S.3': getValue(psf3Selects[2], 'F.3.S.3'),
+        'F.3.S.4': getValue(psf3Selects[3], 'F.3.S.4'),
+        'F.3.S.5': getValue(psf3Selects[4], 'F.3.S.5'),
+        'F.3.S.6': getValue(psf3Selects[5], 'F.3.S.6')
+      };
+
+      // PSF4
+      const psf4House = houses[3];
+      const psf4Selects = psf4House.querySelectorAll('.room-select');
+      data["F.4"] = {
+        training_elapsed_months: trainingMonths,
+        'F.4.S.1': getValue(psf4Selects[0], 'F.4.S.1'),
+        'F.4.S.2': getValue(psf4Selects[1], 'F.4.S.2'),
+        'F.4.S.3': getValue(psf4Selects[2], 'F.4.S.3'),
+        'F.4.S.4': getValue(psf4Selects[3], 'F.4.S.4'),
+        'F.4.S.5': getValue(psf4Selects[4], 'F.4.S.5'),
+        'F.4.S.6': getValue(psf4Selects[5], 'F.4.S.6'),
+        'F.4.S.7': getValue(psf4Selects[6], 'F.4.S.7')
+      };
+
+      // PSF5
+      const psf5House = houses[4];
+      const psf5Selects = psf5House.querySelectorAll('.room-select');
+      data["F.5"] = {
+        'F.5.S.1': getValue(psf5Selects[0], 'F.5.S.1'),
+        'F.5.S.2': getValue(psf5Selects[1], 'F.5.S.2'),
+        'F.5.S.3': getValue(psf5Selects[2], 'F.5.S.3'),
+        'F.5.S.4': getValue(psf5Selects[3], 'F.5.S.4'),
+        'F.5.S.5': getValue(psf5Selects[4], 'F.5.S.5'),
+        'F.5.S.6': getValue(psf5Selects[5], 'F.5.S.6')
+      };
+
+      // PSF6
+      const psf6House = houses[5];
+      const psf6Selects = psf6House.querySelectorAll('.room-select');
+      data["F.6"] = {
+        'F.6.S.1': getValue(psf6Selects[0], 'F.6.S.1'),
+        'F.6.S.2': getValue(psf6Selects[1], 'F.6.S.2'),
+        'F.6.S.3': getValue(psf6Selects[2], 'F.6.S.3'),
+        'F.6.S.4': getValue(psf6Selects[3], 'F.6.S.4'),
+        'F.6.S.5': getValue(psf6Selects[4], 'F.6.S.5'),
+        'F.6.S.6': getValue(psf6Selects[5], 'F.6.S.6'),
+        'F.6.S.7': getValue(psf6Selects[6], 'F.6.S.7'),
+        'F.6.S.8': getValue(psf6Selects[7], 'F.6.S.8'),
+        'F.6.S.9': getValue(psf6Selects[8], 'F.6.S.9'),
+        'F.6.S.10': getValue(psf6Selects[9], 'F.6.S.10'),
+        'F.6.S.11': getValue(psf6Selects[10], 'F.6.S.11'),
+        'F.6.S.12': getValue(psf6Selects[11], 'F.6.S.12'),
+        'F.6.S.13': getValue(psf6Selects[12], 'F.6.S.13'),
+        'F.6.S.14': getValue(psf6Selects[13], 'F.6.S.14')
+      };
+
+      // PSF7
+      const psf7House = houses[6];
+      const psf7Selects = psf7House.querySelectorAll('.room-select');
+      data["F.7"] = {
+        'F.7.S.1': getValue(psf7Selects[0], 'F.7.S.1'),
+        'F.7.S.2': getValue(psf7Selects[1], 'F.7.S.2'),
+        'F.7.S.3': getValue(psf7Selects[2], 'F.7.S.3'),
+        'F.7.S.4': getValue(psf7Selects[3], 'F.7.S.4'),
+        'F.7.S.5': getValue(psf7Selects[4], 'F.7.S.5')
+      };
+
+      // PSF8
+      const psf8House = houses[7];
+      const psf8Selects = psf8House.querySelectorAll('.room-select');
+      data["F.8"] = {
+        'F.8.S.1': getValue(psf8Selects[0], 'F.8.S.1'),
+        'F.8.S.2': getValue(psf8Selects[1], 'F.8.S.2'),
+        'F.8.S.3': getValue(psf8Selects[2], 'F.8.S.3'),
+        'F.8.S.4': getValue(psf8Selects[3], 'F.8.S.4'),
+        'F.8.S.5': getValue(psf8Selects[4], 'F.8.S.5'),
+        'F.8.S.6': getValue(psf8Selects[5], 'F.8.S.6'),
+        'F.8.S.7': getValue(psf8Selects[6], 'F.8.S.7')
+      };
+
+      console.log('전송할 데이터:', data);
+
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      loadingOverlay.style.display = 'flex';
+      submitBtn.disabled = true;
+      submitBtn.textContent = '분석 중…';
+
+      fetch('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(data)
+      })
+        .then(async response => {
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || '예측 요청에 실패했습니다.');
+          }
+          if (!Array.isArray(result.results) || result.results.length !== 8) {
+            throw new Error('전체 설문 결과를 받지 못했습니다. 다시 시도해 주세요.');
+          }
+          return result;
+        })
+        .then(result => {
+          console.log('결과:', result);
+
+          result.forecast_inputs = {
+            training_elapsed_months: trainingMonths,
+            work_started_at: workStartedAt,
+          };
+          sessionStorage.setItem('psfResults', JSON.stringify(result));
+
+          window.location.href = '/result';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          loadingOverlay.style.display = 'none';
+          showModal('분석 중 오류가 발생했습니다: ' + error.message);
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '분석하기';
+        });
+    }
+
+    // 커스텀 모달 함수
+    function showModal(message) {
+      document.getElementById('modalMessage').textContent = message;
+      document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('customModal').style.display = 'none';
+    }
+
+    function selectRole(btn) {
+      const role = btn.dataset.role; //관제사
+      sessionStorage.setItem("selectedRole", role);
+
+      document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function setSelectValue(selector, value) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      el.value = value;
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    const scenarioOverlay = document.getElementById("scenarioOverlay");
+    const scenarioTrigger = document.querySelector(".scenario-trigger");
+    const scenarioClose = document.querySelector(".scenario-close");
+
+    function openScenarioOverlay() {
+      if (!scenarioOverlay) return;
+      scenarioOverlay.classList.add("is-open");
+      scenarioOverlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeScenarioOverlay() {
+      if (!scenarioOverlay) return;
+      scenarioOverlay.classList.remove("is-open");
+      scenarioOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    if (scenarioTrigger) {
+      scenarioTrigger.addEventListener("click", openScenarioOverlay);
+    }
+
+    if (scenarioClose) {
+      scenarioClose.addEventListener("click", closeScenarioOverlay);
+    }
+
+    if (scenarioOverlay) {
+      scenarioOverlay.addEventListener("click", (event) => {
+        if (event.target === scenarioOverlay) closeScenarioOverlay();
+      });
+    }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeScenarioOverlay();
+    });
+
+    document.querySelectorAll(".scenario-actions button").forEach((button) => {
+      button.addEventListener("click", closeScenarioOverlay);
+    });
+
+    document.querySelector(".bad-scenario").addEventListener("click", () => {
+      const map = {
+        //PSF1 - 시간/피로
+        "#worktimeSelect": "room3",
+        "#workhourSelect": "room3",
+        "#sleeptimeSelect": "room1",
+        "#workpermissiontimeSelect": "room3",
+        "#workinghoursSelect": "room3",
+
+        //PSF2 - 설비/도구
+        "#systemabailabilitySelect": "room2",
+        "#suitability-of-work-tool-select": "room1",
+        "#adequacy-of-computer-aided-system-select": "room3",
+        "#usability-of-equipment-select": "room3",
+        "#quality-of-equipment-user-manual-select": "room3",
+        "#connectivity-with-other-devices-select": "room3",
+        "#adequacy-of-maintenance-select": "room3",
+
+        //PSF3 - 절차
+        "#presence-or-absence-of-procedure-select": "room2",
+        "#complexity-of-procedural-techniques-select": "room1",
+        "#clarity-of-procedure-select": "room3",
+        "#adequacy-of-procedure-select": "room3",
+        "#consistency-of-procedure-select": "room3",
+        "#process-traceability-select": "room3",
+
+        //PSF4 - 교육/훈련
+        "#educational-program-suitability-select": "room3",
+        "#educational-cycle-select": "room3",
+        "#degree-of-experience-with-the-situation-select": "room3",
+        "#frequency-of-job-competency-evaluation-select": "room3",
+        "#system-knowledge-proficiency-select": "room3",
+        "#proficiency-in-procedural-knowledge-select": "room3",
+        "#proficiency-in-equipment-use-select": "room3",
+
+        //PSF5 - 의사소통
+        "#length-of-communication-message-select": "room1",
+        "#adequacy-of-equipment-for-communication-select": "room3",
+        "#importance-of-communication-select": "room1",
+        "#specificity-of-communication-protocols-select": "room3",
+        "#shared-understanding-select": "room3",
+        "#organization-communication-autonomy-select": "room3",
+
+        //PSF6 - 환경
+        "#work-performance-environment-select": "room2",
+        "#rain-select": "room2",
+        "#outdoor-humidity-select": "room2",
+        "#outdoor-temperature-select": "room2",
+        "#thunderstroke-select": "room1",
+        "#fog-select": "room1",
+        "#yellow-dust-select": "room2",
+        "#workspace-size-select": "room2",
+        "#coefficient-of-friction-select": "room2",
+        "#indoor-temperature-select": "room3",
+        "#indoor-humidity-select": "room3",
+        "#gout-select": "room2",
+        "#noise-select": "room3",
+        "#workspace-visibility-select": "room1",
+
+        //PSF7 - 팀/조직
+        "#task-management-select": "room3",
+        "#work-plan-select": "room3",
+        "#work-procedure-select": "room3",
+        "#division-of-roles-select": "room3",
+        "#degree-of-worker-collaboration-select": "room3",
+
+        //PSF8 - 복잡도/의사결정
+        "#clarity-of-decision-making-goals-select": "room2",
+        "#numbers-of-alternatives-select": "room3",
+        "#number-of-decision-making-criteria-select": "room3",
+        "#decision-tree-select": "room3",
+        "#amount-of-observed-information-select": "room3",
+        "#amount-of-information-to-be-deduced-select": "room3",
+        "#uncertainty-of-information-select": "room1"
+      };
+
+      Object.entries(map).forEach(([selector, value]) => {
+        setSelectValue(selector, value);
+      });
+    });
+
+    document.querySelector(".common-scenario").addEventListener("click", () => {
+      const map = {
+        //PSF1 - 시간/피로
+        "#worktimeSelect": "room2",
+        "#workhourSelect": "room2",
+        "#sleeptimeSelect": "room2",
+        "#workpermissiontimeSelect": "room2",
+        "#workinghoursSelect": "room2",
+
+        //PSF2 - 설비/도구
+        "#systemabailabilitySelect": "room2",
+        "#suitability-of-work-tool-select": "room2",
+        "#adequacy-of-computer-aided-system-select": "room2",
+        "#usability-of-equipment-select": "room2",
+        "#quality-of-equipment-user-manual-select": "room2",
+        "#connectivity-with-other-devices-select": "room2",
+        "#adequacy-of-maintenance-select": "room2",
+
+        //PSF3 - 절차
+        "#presence-or-absence-of-procedure-select": "room1",
+        "#complexity-of-procedural-techniques-select": "room2",
+        "#clarity-of-procedure-select": "room2",
+        "#adequacy-of-procedure-select": "room2",
+        "#consistency-of-procedure-select": "room2",
+        "#process-traceability-select": "room2",
+
+        //PSF4 - 교육/훈련
+        "#educational-program-suitability-select": "room2",
+        "#educational-cycle-select": "room2",
+        "#degree-of-experience-with-the-situation-select": "room2",
+        "#frequency-of-job-competency-evaluation-select": "room2",
+        "#system-knowledge-proficiency-select": "room2",
+        "#proficiency-in-procedural-knowledge-select": "room2",
+        "#proficiency-in-equipment-use-select": "room2",
+
+        //PSF5 - 의사소통
+        "#length-of-communication-message-select": "room2",
+        "#adequacy-of-equipment-for-communication-select": "room2",
+        "#importance-of-communication-select": "room2",
+        "#specificity-of-communication-protocols-select": "room2",
+        "#shared-understanding-select": "room3",
+        "#organization-communication-autonomy-select": "room3",
+
+        //PSF6 - 환경
+        "#work-performance-environment-select": "room2",
+        "#rain-select": "room1",
+        "#outdoor-humidity-select": "room1",
+        "#outdoor-temperature-select": "room1",
+        "#thunderstroke-select": "room1",
+        "#fog-select": "room1",
+        "#yellow-dust-select": "room1",
+        "#workspace-size-select": "room2",
+        "#coefficient-of-friction-select": "room2",
+        "#indoor-temperature-select": "room3",
+        "#indoor-humidity-select": "room3",
+        "#gout-select": "room2",
+        "#noise-select": "room3",
+        "#workspace-visibility-select": "room2",
+
+        //PSF7 - 팀/조직
+        "#task-management-select": "room2",
+        "#work-plan-select": "room2",
+        "#work-procedure-select": "room2",
+        "#division-of-roles-select": "room2",
+        "#degree-of-worker-collaboration-select": "room2",
+
+        //PSF8 - 복잡도/의사결정
+        "#clarity-of-decision-making-goals-select": "room1",
+        "#numbers-of-alternatives-select": "room2",
+        "#number-of-decision-making-criteria-select": "room2",
+        "#decision-tree-select": "room2",
+        "#amount-of-observed-information-select": "room2",
+        "#amount-of-information-to-be-deduced-select": "room2",
+        "#uncertainty-of-information-select": "room2"
+      };
+
+      Object.entries(map).forEach(([selector, value]) => {
+        setSelectValue(selector, value);
+      });
+    });
+
+    document.querySelector(".good-scenario").addEventListener("click", () => {
+      const map = {
+        //PSF1 - 시간/피로
+        "#worktimeSelect": "room1",
+        "#workhourSelect": "room1",
+        "#sleeptimeSelect": "room3",
+        "#workpermissiontimeSelect": "room1",
+        "#workinghoursSelect": "room1",
+
+        //PSF2 - 설비/도구
+        "#systemabailabilitySelect": "room1",
+        "#suitability-of-work-tool-select": "room1",
+        "#adequacy-of-computer-aided-system-select": "room1",
+        "#usability-of-equipment-select": "room1",
+        "#quality-of-equipment-user-manual-select": "room1",
+        "#connectivity-with-other-devices-select": "room1",
+        "#adequacy-of-maintenance-select": "room1",
+
+        //PSF3 - 절차
+        "#presence-or-absence-of-procedure-select": "room1",
+        "#complexity-of-procedural-techniques-select": "room3",
+        "#clarity-of-procedure-select": "room1",
+        "#adequacy-of-procedure-select": "room1",
+        "#consistency-of-procedure-select": "room1",
+        "#process-traceability-select": "room1",
+
+        //PSF4 - 교육/훈련
+        "#educational-program-suitability-select": "room1",
+        "#educational-cycle-select": "room1",
+        "#degree-of-experience-with-the-situation-select": "room1",
+        "#frequency-of-job-competency-evaluation-select": "room1",
+        "#system-knowledge-proficiency-select": "room1",
+        "#proficiency-in-procedural-knowledge-select": "room1",
+        "#proficiency-in-equipment-use-select": "room1",
+
+        //PSF5 - 의사소통
+        "#length-of-communication-message-select": "room3",
+        "#adequacy-of-equipment-for-communication-select": "room1",
+        "#importance-of-communication-select": "room3",
+        "#specificity-of-communication-protocols-select": "room1",
+        "#shared-understanding-select": "room1",
+        "#organization-communication-autonomy-select": "room1",
+
+        //PSF6 - 환경
+        "#work-performance-environment-select": "room2",
+        "#rain-select": "room1",
+        "#outdoor-humidity-select": "room1",
+        "#outdoor-temperature-select": "room1",
+        "#thunderstroke-select": "room1",
+        "#fog-select": "room1",
+        "#yellow-dust-select": "room1",
+        "#workspace-size-select": "room1",
+        "#coefficient-of-friction-select": "room1",
+        "#indoor-temperature-select": "room2",
+        "#indoor-humidity-select": "room2",
+        "#gout-select": "room1",
+        "#noise-select": "room1",
+        "#workspace-visibility-select": "room1",
+
+        //PSF7 - 팀/조직
+        "#task-management-select": "room1",
+        "#work-plan-select": "room1",
+        "#work-procedure-select": "room1",
+        "#division-of-roles-select": "room1",
+        "#degree-of-worker-collaboration-select": "room1",
+
+        //PSF8 - 복잡도/의사결정
+        "#clarity-of-decision-making-goals-select": "room1",
+        "#numbers-of-alternatives-select": "room1",
+        "#number-of-decision-making-criteria-select": "room1",
+        "#decision-tree-select": "room1",
+        "#amount-of-observed-information-select": "room1",
+        "#amount-of-information-to-be-deduced-select": "room1",
+        "#uncertainty-of-information-select": "room2"
+      };
+      Object.entries(map).forEach(([selector, value]) => {
+        setSelectValue(selector, value);
+      });
+    });
+  </script>
+
+</body>
+
+</html>

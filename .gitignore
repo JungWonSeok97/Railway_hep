@@ -1,0 +1,19 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Temporary artifacts
+tmp/
+
+# Individual survey, employment, and health records
+processed_data/*.csv
+processed_data/psf_tables/
+processed_data/history/

@@ -1,0 +1,76 @@
+.result-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.result-actions .back-button, .result-actions .forecast-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-height: 48px;
+  padding: 12px 24px;
+  font: inherit;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  box-shadow: 0 12px 25px rgba(15, 61, 145, 0.25);
+}
+.forecast-open, .forecast-form button {
+  color: white;
+  background: linear-gradient(120deg, var(--primary), var(--accent));
+  border: none;
+  border-radius: 999px;
+  padding: 12px 24px;
+}
+.forecast-dialog {
+  width: min(900px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  color: var(--ink);
+  background: white;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.3);
+  overscroll-behavior: contain;
+}
+.forecast-dialog::backdrop { background: rgba(15, 23, 42, 0.6); }
+body.forecast-modal-open { overflow: hidden; }
+.forecast-dialog .forecast-card { margin: 0; border: 0; box-shadow: none; }
+.forecast-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.forecast-close { flex-shrink: 0; padding: 8px 14px; }
+.forecast-note { font-size: 14px; color: var(--muted); }
+.forecast-card { padding: 24px; background: white; border: 1px solid var(--border); border-radius: 16px; margin: 20px 0; box-shadow: var(--shadow-sm); }
+.forecast-card h3 { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 22px; }
+.forecast-card h3 img { width: 48px; height: 56px; object-fit: contain; }
+.forecast-form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; }
+.forecast-form label { flex-basis: 100%; font-weight: 600; }
+.forecast-form input { font: inherit; color: var(--ink); min-width: 0; max-width: 100%; border: 1px solid #94a3b8; border-radius: 8px; padding: 10px 12px; }
+.forecast-status { min-height: 24px; color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.forecast-error { color: #b91c1c; }
+.forecast-loading-image { width: 100px; height: 32px; object-fit: contain; vertical-align: middle; margin-right: 8px; }
+.forecast-chart-scroll { overflow-x: auto; }
+.forecast-svg { width: 100%; min-width: 480px; display: block; font-family: inherit; font-size: 13px; fill: var(--muted); }
+.forecast-grid-line { stroke: #dce3ec; stroke-dasharray: 4 4; }
+.forecast-card input[type=range] { display: block; width: 100%; accent-color: var(--primary); margin: 16px 0; }
+.forecast-value { display: block; padding: 12px; border-radius: 8px; background: #eff6ff; font-weight: 600; font-variant-numeric: tabular-nums; }
+.forecast-card details { margin-top: 20px; }
+.forecast-card summary { cursor: pointer; }
+.forecast-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.forecast-table th, .forecast-table td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+.result-caption-icon { width: 42px; height: 48px; object-fit: contain; }
+@media (max-width: 640px) {
+  .forecast-card { padding: 16px; }
+  .forecast-form input, .forecast-form button { width: 100%; }
+  .forecast-dialog { max-height: calc(100dvh - 24px); }
+  .forecast-dialog-header { align-items: flex-start; gap: 8px; }
+  .forecast-dialog-header h3 { font-size: 19px; }
+  .forecast-dialog-header h3 img { width: 36px; height: 42px; }
+  .result-actions { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .forecast-loading-image { display: none; }
+}

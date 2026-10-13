@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>PSF 예측 결과</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/detail_result.css">
+  <link rel="stylesheet" href="/static/forecast.css">
+  <script src="/static/forecast.js" defer></script>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.css" />
+  <style>
+    .header {
+      padding-top: 0;
+    }
+
+    h2 {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="title-bar">설문결과를 학습한 AI가 예측한 사고 발생 확률 상세</div>
+    </div>
+    <div class="loading" id="loading">
+      <p>분석 중입니다...</p>
+    </div>
+
+    <div class="error-message" id="errorMessage">
+      <p id="errorText"></p>
+      <a href="/input" class="back-button">설문 시작하기</a>
+    </div>
+
+    <div class="results-container" id="resultsContainer">
+      <div id="resultsList">
+      </div>
+      <div class="result-actions" id="resultActions">
+        <a href="/result" class="back-button">결과 요약</a>
+        <a href="/input" class="back-button">다시 설문하기</a>
+        <button type="button" id="hourlyForecastOpen" class="forecast-open" aria-haspopup="dialog" aria-controls="hourlyForecastDialog">시간별 HEP 예측</button>
+        <button type="button" id="monthlyForecastOpen" class="forecast-open" aria-haspopup="dialog" aria-controls="monthlyForecastDialog">월별 HEP 예측</button>
+      </div>
+    </div>
+  </div>
+
+      <dialog id="monthlyForecastDialog" class="forecast-dialog" aria-labelledby="monthlyForecastTitle">
+        <article class="forecast-card">
+          <div class="forecast-dialog-header">
+            <h3 id="monthlyForecastTitle"><img src="/images/education.png" alt="" />월별 HEP 예측</h3>
+            <button type="button" id="monthlyForecastClose" class="forecast-close" aria-label="월별 HEP 예측 팝업 닫기" autofocus>닫기</button>
+          </div>
+          <p>교육·훈련 배수만 바꾸고 나머지 항목은 현재 값으로 고정합니다.</p>
+          <p class="forecast-note">HEP 계산 기준은 상세 결과와 같습니다.</p>
+          <form id="monthlyForecastForm" class="forecast-form">
+            <label for="forecastMonths">마지막 교육 후 경과 개월 수</label>
+            <input id="forecastMonths" type="number" min="0" step="any" required placeholder="예: 15">
+            <button type="submit">월별 그래프 조회</button>
+          </form>
+          <p id="monthlyStatus" class="forecast-status" role="status" aria-live="polite"></p>
+          <div id="monthlyChart"></div>
+        </article>
+      </dialog>
+      <dialog id="hourlyForecastDialog" class="forecast-dialog" aria-labelledby="hourlyForecastTitle">
+        <article class="forecast-card">
+          <div class="forecast-dialog-header">
+            <h3 id="hourlyForecastTitle"><img src="/images/workload.png" alt="" />시간별 HEP 예측</h3>
+            <button type="button" id="hourlyForecastClose" class="forecast-close" aria-label="시간별 HEP 예측 팝업 닫기" autofocus>닫기</button>
+          </div>
+          <p>작업부하 수준만 바꾸고 나머지 항목은 현재 값으로 고정합니다.</p>
+          <p class="forecast-note">근무 진행시간이 반영되어 조회 시점의 HEP가 설문 결과와 다를 수 있습니다.</p>
+          <form id="hourlyForecastForm" class="forecast-form">
+            <label for="forecastWorkStartedAt">현재 근무 시작 일시 (한국시간)</label>
+            <input id="forecastWorkStartedAt" type="datetime-local" required>
+            <button type="submit">시간별 그래프 조회</button>
+          </form>
+          <p id="hourlyStatus" class="forecast-status" role="status" aria-live="polite"></p>
+          <div id="hourlyChart"></div>
+        </article>
+      </dialog>
+
+  <script>
+    const psfNames = {
+      1: "작업부하",
+      2: "장비 및 기기",
+      3: "절차 및 지침",
+      4: "교육 및 훈련",
+      5: "의사소통",
+      6: "환경",
+      7: "작업절차",
+      8: "복잡성"
+    };
+
+    const getNumericPsfId = (psfId) => Number(String(psfId).replace('F.', ''));
+    const psfImages = {
+      1: 'workload.png', 2: 'railwy_work_vehicle.png', 3: 'memo.png', 4: 'education.png',
+      5: 'communication.png', 6: 'environment.png', 7: 'work_procedure.png', 8: 'complexity.png'
+    };
+    const predictionCodeToLabel = {
+      'F.1.1': '보통', 'F.1.2': '나쁨', 'F.1.3': '매우나쁨',
+      'F.2.1': '좋음', 'F.2.2': '보통', 'F.2.3': '나쁨',
+      'F.3.1': '좋음', 'F.3.2': '보통', 'F.3.3': '나쁨',
+      'F.4.1': '좋음', 'F.4.2': '보통', 'F.4.3': '나쁨',
+      'F.5.1': '보통', 'F.5.2': '나쁨',
+      'F.6.1': '보통', 'F.6.2': '나쁨',
+      'F.7.1': '좋음', 'F.7.2': '보통', 'F.7.3': '나쁨',
+      'F.8.1': '보통', 'F.8.2': '약간 높음', 'F.8.3': '매우 높음'
+    };
+    const getPredictedDisplayText = (result) => predictionCodeToLabel[result.predicted_text] || result.predicted_text;
+    const getDisplayProbabilities = (result) => Object.fromEntries(
+      Object.entries(result.probabilities || {}).map(([key, value]) => [
+        predictionCodeToLabel[key] || key,
+        value
+      ])
+    );
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const resultsData = sessionStorage.getItem('psfResults');
+
+      if (resultsData) {
+        try {
+          const data = JSON.parse(resultsData);
+          displayResults(data);
+        } catch (e) {
+          showError("결과 데이터를 파싱하는데 실패했습니다.");
+        }
+      } else {
+        showError("분석할 데이터가 없습니다. 설문조사를 먼저 완료해주세요.");
+      }
+    });
+
+    function displayResults(data) {
+      const loading = document.getElementById('loading');
+      const resultsContainer = document.getElementById('resultsContainer');
+      const resultsList = document.getElementById('resultsList');
+
+      if (!data.success || !data.results || data.results.length === 0) {
+        showError(data.error || "분석 결과가 없습니다.");
+        return;
+      }
+
+      // 종합 점수 계산
+      let goodCount = 0, normalCount = 0, badCount = 0;
+
+      data.results.forEach(result => {
+        if (result.predicted_label === 0) goodCount++;
+        else if (result.predicted_label === 1) normalCount++;
+        else badCount++;
+      });
+
+
+
+      // 개별 결과 표시
+      resultsList.innerHTML = '';
+
+      data.results.forEach((result) => {
+        console.log(result.probabilities);
+        result.predicted_text = getPredictedDisplayText(result);
+        result.probabilities = getDisplayProbabilities(result);
+        const wrap = document.createElement('div');
+        wrap.className = 'result-wrap';   // ✅ grid 아이템(래퍼)
+
+        const card = document.createElement('div');
+        card.className = 'result-item';   // ✅ 테두리 있는 네모 카드
+
+        const probs = result.probabilities;
+        const probKeys = Object.keys(probs);
+        const sortOrder = ['매우높음', '매우나쁨', '약간 높음', '나쁨', '보통', '좋음'];
+        probKeys.sort((a, b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
+
+        const headerBadgeClass =
+          result.predicted_text === '좋음' ? 'badge-good'
+            : result.predicted_text === '보통' ? 'badge-normal'
+              : result.predicted_text === '약간 높음' ? 'badge-little-height'
+                : result.predicted_text === '나쁨' ? 'badge-little-bad'
+                  : 'badge-bad';
+
+        // ✅ 카드에는 확률 막대만
+        card.innerHTML = probKeys.length === 0 ? `<p>교육 후 경과 개월 수에 따른 계산 결과</p><p>HEP 배수: <strong>${result.hep_multiplier}</strong></p>` : `
+    <div class="probabilities">
+      ${probKeys.map((key) => {
+          const pct = (probs[key] * 100).toFixed(1);
+          const barClass =
+            key === '좋음' ? 'bar-good'
+              : key === '보통' ? 'bar-normal'
+                : key === '약간 높음' ? 'bar-little-height'
+                  : key === '나쁨' ? 'bar-little-good'
+                    : 'bar-bad';
+
+          return `
+          <div class="prob-item">
+            <span class="prob-font">${key}</span>
+            <div class="prob-bar-wrapper">
+              <div class="prob-bar ${barClass}" style="height:${pct}%"></div>
+            </div>
+            <span>${pct}%</span>
+          </div>
+        `;
+        }).join('')}
+    </div>
+  `;
+
+        const caption = document.createElement('div');
+        caption.className = 'result-caption';
+        caption.innerHTML = `
+    <img class="result-caption-icon" src="/images/${psfImages[getNumericPsfId(result.psf_id)]}" alt="" />
+    <span class="psf-title"> ${psfNames[getNumericPsfId(result.psf_id)]}</span>
+    <span class="result-badge ${headerBadgeClass}">${result.predicted_text}</span>
+  `;
+
+        wrap.appendChild(card);
+        wrap.appendChild(caption);
+
+        resultsList.appendChild(wrap);
+      });
+
+
+
+      loading.style.display = 'none';
+      resultsContainer.style.display = 'block';
+    }
+
+    function showError(message) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('errorText').textContent = message;
+      document.getElementById('errorMessage').style.display = 'block';
+    }
+
+    // PSF별 값 매핑 테이블
+    const psfValueMappings = {
+      1: { '보통': 1, '나쁨': 14.45, '매우나쁨': 17.54 },
+      2: { '좋음': 0.492, '보통': 1, '나쁨': 5.654 },
+      3: { '좋음': 0.292, '보통': 1, '나쁨': 8.559 },
+      4: { '좋음': 0.421, '보통': 1, '나쁨': 7.229 },
+      5: { '보통': 1, '나쁨': 9.559 },
+      6: { '보통': 1, '나쁨': 11.576 },
+      7: { '좋음': 0.322, '보통': 1, '나쁨': 12.11 },
+      8: { '보통': 1, '약간 높음': 4.654, '매우 높음': 11.873 }
+    };
+
+    // 직종별 기본 HEP 값
+    const roleHEPValues = {
+      '기관사': { diagnosis: 0.01225, execution: 0.00615 },
+      '관제사': { diagnosis: 0.0055, execution: 0.00352 },
+      '정비사': { diagnosis: 0.00279, execution: 0.00347 },
+      '선로작업자': { diagnosis: 0.01225, execution: 0.0035 }
+    };
+
+    // HEP 계산 함수
+    function calculateHEP(results) {
+      const selectedRole = sessionStorage.getItem('selectedRole') || '기관사';
+      const baseHEP = roleHEPValues[selectedRole] || roleHEPValues['기관사'];
+
+      // 각 PSF의 값을 계산
+      let psfMultiplier = 1;
+      const psfDetails = [];
+
+      results.forEach(result => {
+        const psfId = getNumericPsfId(result.psf_id);
+        const predictedText = getPredictedDisplayText(result);
+        const psfMapping = psfValueMappings[psfId];
+
+        let psfValue = 1; // 기본값
+        if (psfMapping && psfMapping[predictedText] !== undefined) {
+          psfValue = psfMapping[predictedText];
+        }
+
+        if (typeof result.hep_multiplier === 'number' && Number.isFinite(result.hep_multiplier)) {
+          psfValue = result.hep_multiplier;
+        }
+        psfMultiplier *= psfValue;
+        psfDetails.push({
+          psfId: psfId,
+          label: predictedText,
+          value: psfValue
+        });
+      });
+
+      // 진단 HEP와 수행 HEP 계산
+      let diagnosisHEP = baseHEP.diagnosis * psfMultiplier;
+      let executionHEP = baseHEP.execution * psfMultiplier;
+      let finalHEP = diagnosisHEP + executionHEP;
+
+      const big_diagnosisHEP = (baseHEP.diagnosis * psfMultiplier) / (baseHEP.diagnosis * (psfMultiplier - 1) + 1)
+      const big_executionHEP = (baseHEP.execution * psfMultiplier) / (baseHEP.execution * (psfMultiplier - 1) + 1)
+      const big_finalHEP = big_diagnosisHEP + big_executionHEP;
+
+
+      if (finalHEP > 1) {
+        finalHEP = big_finalHEP;
+        diagnosisHEP = big_diagnosisHEP;
+        executionHEP = big_executionHEP
+      }
+      console.log(big_diagnosisHEP)
+      console.log(big_executionHEP)
+      console.log(finalHEP)
+
+      return {
+        role: selectedRole,
+        baseDiagnosis: baseHEP.diagnosis,
+        baseExecution: baseHEP.execution,
+        psfMultiplier: psfMultiplier,
+        diagnosisHEP: diagnosisHEP,
+        executionHEP: executionHEP,
+        finalHEP: finalHEP,
+        psfDetails: psfDetails
+      };
+    }
+
+    function displayHEPResults(hepData) {
+      const resultsContainer = document.getElementById('resultsContainer');
+      const resultActions = document.getElementById('resultActions');
+
+      const hepCard = document.createElement('div');
+
+
+      hepCard.className = 'summary-card';
+      hepCard.style.marginTop = '20px';
+
+
+      // ✅ 주어진 범위
+      const HEP_MIN = 0;
+      const HEP_MAX = 2;
+
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+      // ✅ 선형 정규화 (0~100%)
+      const normalizeLinearPct = (v) => {
+        const clamped = clamp(v, HEP_MIN, HEP_MAX);
+        const range = HEP_MAX - HEP_MIN;
+        if (range <= 0) return 0;
+        return ((clamped - HEP_MIN) / range) * 100;
+      };
+
+      const totalValue = hepData.finalHEP || 0;
+      const execValue = hepData.executionHEP || 0;
+      const diagValue = execValue + (hepData.diagnosisHEP || 0);
+      const totalPct = normalizeLinearPct(totalValue);
+
+      // ✅ 스택 비율 (수행 먼저 + 진단이 위에 쌓임)
+      const execRatio = totalValue ? (hepData.executionHEP / totalValue) : 0;
+      const diagRatio = totalValue ? (hepData.diagnosisHEP / totalValue) : 0;
+      // gauge-fill(총높이) 안에서 각각의 비율만큼 차지
+      const execInnerPct = execRatio * 100;
+      const diagInnerPct = diagRatio * 100;
+      const executionPct = normalizeLinearPct(execValue);
+      const diagnosisPct = normalizeLinearPct(diagValue);
+      const clampPct = (v) => Math.max(0, Math.min(100, v));
+      const execMarkerPct = clampPct(executionPct);
+      const diagMarkerPct = clampPct(diagnosisPct);
+      const totalMarkerPct = clampPct(totalPct);
+
+      hepCard.innerHTML = `
+    <div style="
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;
+      color:#111827;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:18px;
+      line-height:1.35;
+    ">
+      <div style="font-size:16px;font-weight:700;margin-bottom:14px;">
+        사고발생 확률 (HEP) 계산 결과
+      </div>
+
+      <div class="hep-row">
+        <!-- 왼쪽: 수치 -->
+        <div>
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">선택한 직종</div>
+            <div style="font-size:15px;font-weight:600;">${hepData.role}</div>
+          </div>
+
+          <div style="height:1px;background:#f1f5f9;margin:14px 0;"></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div style="padding:12px;border:1px solid #f1f5f9;border-radius:10px;">
+              <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">인지, 판단 오류 확률 (진단 HEP)</div>
+              <div style="font-size:14px;font-weight:600;">${hepData.diagnosisHEP.toFixed(6)} %</div>
+            </div>
+            <div style="padding:12px;border:1px solid #f1f5f9;border-radius:10px;">
+              <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">행동 수행 오류 확률 (수행 HEP)</div>
+              <div style="font-size:14px;font-weight:600;">${hepData.executionHEP.toFixed(6)} %</div>
+            </div>
+          </div>
+
+          <div style="padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">
+              최종 오류확률 (진단 HEP + 수행 HEP)
+            </div>
+            <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em;">
+              ${hepData.finalHEP.toFixed(6)} %
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:6px;">
+              (${hepData.diagnosisHEP.toFixed(6)} + ${hepData.executionHEP.toFixed(6)})
+            </div>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 진단/수행 게이지 바 -->
+        <div class="hep-gauge">
+          <div class="gauge-scale-row">
+            <span class="gauge-scale">${HEP_MIN}</span>
+            <span class="gauge-scale">${Number(HEP_MAX).toLocaleString()}</span>
+          </div>
+          <div class="gauge-row">
+  <span class="gauge-label">최종 사고발생 확률</span>
+  <div class="gauge-track-wrap">
+    <div class="gauge-track" title="총 HEP 게이지">
+      <div class="gauge-fill" style="width:${totalPct}%">
+        <div class="gauge-seg exec" style="width:${execInnerPct}%"></div>
+        <div class="gauge-seg diag" style="width:${diagInnerPct}%"></div>
+      </div>
+    </div>
+    <!--
+    <span class="total-label" style="left:0%">${totalValue.toFixed(3)}</span>
+    -->
+    <div class="hep-marker exec" style="--hep-marker:0%">
+      <span class="hep-marker-label">수행 HEP ${execValue.toFixed(3)}</span>
+    </div>
+    <div class="hep-marker diag" style="--hep-marker:0%">
+      <span class="hep-marker-label">수행 HEP + 진단 HEP ${diagValue.toFixed(3)}</span>
+    </div>
+    <!--
+    <div class="hep-marker total" style="--hep-marker:0%">
+      <span class="hep-marker-label">Final HEP ${totalValue.toFixed(3)}</span>
+    </div>
+    -->
+  </div>
+  <!--
+  <span class="gauge-value">${hepData.finalHEP.toFixed(3)}</span>
+  -->
+</div>
+          <div class="hep-legend">
+            <div><span class="dot exec"></span>수행</div>
+            <div><span class="dot diag"></span>진단</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+      resultsContainer.insertBefore(hepCard, resultActions);
+
+      const execMarker = hepCard.querySelector('.hep-marker.exec');
+      const diagMarker = hepCard.querySelector('.hep-marker.diag');
+      const totalMarker = hepCard.querySelector('.hep-marker.total');
+      const totalLabel = hepCard.querySelector('.total-label');
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (execMarker) execMarker.style.setProperty('--hep-marker', `${execMarkerPct}%`);
+          if (diagMarker) diagMarker.style.setProperty('--hep-marker', `${diagMarkerPct}%`);
+          if (totalMarker) totalMarker.style.setProperty('--hep-marker', `${totalMarkerPct}%`);
+          if (totalLabel) totalLabel.style.left = `${totalMarkerPct}%`;
+        });
+      });
+    }
+
+    // 기존 displayResults 함수 수정 - 마지막에 HEP 계산 추가
+    const originalDisplayResults = displayResults;
+    displayResults = function (data) {
+      originalDisplayResults(data);
+
+      // HEP 계산 및 표시
+      if (data.success && data.results && data.results.length > 0) {
+        const hepData = calculateHEP(data.results);
+        displayHEPResults(hepData);
+      }
+    };
+  </script>
+</body>
+
+</html>
