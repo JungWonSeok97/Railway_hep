@@ -43,7 +43,7 @@
 ### 준비 사항
 
 - Python, pip, Git 및 Python 가상환경
-- 저장소에 포함된 `models/*_catboost.cbm` 및 `models/gmm/*.joblib`
+- 저장소에 포함된 `models/*_catboost.cbm`
 - 그래프 테스트를 실행하려면 Node.js
 
 [requirements.txt](requirements.txt)는 Flask, Flask-Cors, NumPy, pandas, scikit-learn, CatBoost, TensorFlow를 선언합니다. 패키지와 Python 버전은 고정되어 있지 않습니다. 선택한 Python·운영체제에서 설치 가능한 조합을 사용하고, 재현이 필요한 실행 환경은 별도로 기록합니다.
@@ -116,13 +116,13 @@ PSF 결과는 `psfResults`, 직종은 `selectedRole` 키로 `sessionStorage`에 
 | ID | 항목 | 기본 경로 | 수준 |
 | --- | --- | --- | --- |
 | F.1 | 작업부하 | CatBoost | 보통 / 나쁨 / 매우나쁨 |
-| F.2 | 장비 및 기기 | GMM 특성 + CatBoost | 좋음 / 보통 / 나쁨 |
+| F.2 | 장비 및 기기 | CatBoost | 좋음 / 보통 / 나쁨 |
 | F.3 | 절차 및 지침 | CatBoost | 좋음 / 보통 / 나쁨 |
 | F.4 | 교육 및 훈련 | 경과 개월 수 공식 | 좋음 / 보통 / 나쁨 |
 | F.5 | 의사소통 | CatBoost | 보통 / 나쁨 |
-| F.6 | 환경 | GMM 특성 + CatBoost | 보통 / 나쁨 |
+| F.6 | 환경 | CatBoost | 보통 / 나쁨 |
 | F.7 | 작업절차 | CatBoost | 좋음 / 보통 / 나쁨 |
-| F.8 | 복잡성 | GMM 특성 + CatBoost | 보통 / 약간 높음 / 매우 높음 |
+| F.8 | 복잡성 | CatBoost | 보통 / 약간 높음 / 매우 높음 |
 
 PSF 수준의 **분류 확률**, F.4의 **HEP 배수**, 최종 **HEP 계산값**은 서로 다른 값입니다. 분류 확률을 인적 오류 확률로 그대로 해석하지 않습니다.
 
@@ -170,12 +170,12 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 위 합계가 1을 초과하면:
 진단 HEP = (d × M) / (d × (M - 1) + 1)
 수행 HEP = (e × M) / (e × (M - 1) + 1)
-최종 HEP = 보정한 진단 HEP + 보정한 수행 HEP
+최종 HEP = 1 - (1 - 보정한 진단 HEP) × (1 - 보정한 수행 HEP)
 ```
 
 이 설명은 현재 [result.html](result.html)과 [detail_result.html](detail_result.html)의 구현을 문서화한 것입니다. 두 계산 구현은 함께 관리해야 합니다.
 
-**현재 표시·범위 제약:** 보정 후 합계에 1 상한을 적용하지 않습니다. 그래프는 계산값에 100을 곱하지 않으며, 상세 화면 일부에는 백분율 변환 없이 `%` 표기가 붙습니다. 다른 시스템으로 값을 옮길 때에는 이 단위·범위 차이를 확인합니다.
+**현재 표시·범위 제약:** 보정한 두 값을 그대로 더하면 1을 넘을 수 있어(최대 약 2) 둘 중 하나라도 실패할 확률로 합치므로, 최종 HEP는 항상 1 이하입니다. 그래프는 계산값에 100을 곱하지 않으며, 상세 화면 일부에는 백분율 변환 없이 `%` 표기가 붙습니다. 다른 시스템으로 값을 옮길 때에는 이 단위·범위 차이를 확인합니다.
 
 ## 시간별·월별 그래프
 
@@ -308,13 +308,13 @@ Railway_hep/
 ├── detail_result.html           # 상세·HEP 계산·그래프 연결
 ├── config/                      # 경로, 수준 코드, CatBoost 특성
 ├── preprocessing/
-│   └── catboost_features.py     # 입력 정규화·GMM 특성
+│   └── catboost_features.py     # 입력 정규화·특성 생성
 ├── predictors/
 │   ├── catboost.py              # CatBoost 로드·예측
 │   ├── psf1_forecast.py          # 시간별 F.1
 │   ├── psf4_formula.py           # F.4 공식·월별 예측
 │   └── cnn.py                   # 기존 CNN 학습·예측
-├── models/                      # CatBoost 8개, gmm/ 번들 4개
+├── models/                      # CatBoost 8개
 ├── static/                      # 실제 화면 CSS·forecast.js
 ├── static copy/                 # 디자인 참고용 CSS
 ├── images/                      # 화면 이미지
@@ -329,9 +329,10 @@ Railway_hep/
 
 ## 모델과 데이터 관리
 
-- CatBoost 모델 8개와 GMM 번들 4개가 포함되어 있습니다. F.4 모델과 GMM은 보조 CatBoost 경로에서 사용합니다.
+- CatBoost 모델 8개가 포함되어 있습니다. 코레일 종사자 설문 응답 26,416건으로, 웹 화면이 보내는 값(0/1/2, 2가 가장 나쁨) 그대로 학습했고 모든 PSF가 설문 문항 하나를 특성 하나로 씁니다. F.4 모델은 보조 CatBoost 경로에서 사용합니다.
+- 화면의 보기 순서가 코드 순서와 다른 문항(수면시간, 절차 기술의 복잡성, 황사, 마찰계수)은 `input.html`의 `optionCodeNumbersByField`에서 맞춥니다.
 - 모델은 최초 사용 시 로드되고 메모리에 캐시됩니다. 교체 후에는 서버를 재시작합니다.
-- CatBoost 특성 이름·순서, 클래스, GMM 번들 구조가 설정과 일치해야 합니다. 모델 교체 시 전처리도 확인합니다.
+- CatBoost 특성 이름·순서, 클래스가 설정과 일치해야 합니다. 모델 교체 시 전처리도 확인합니다.
 - 학습 원본 `4.20 설문조사 결과.txt`는 포함되어 있지 않습니다. 기존 CNN 학습은 `config/paths.py`의 이 경로를 요구합니다.
 - `/api/retrain`은 기존 CNN 파일을 삭제한 뒤 학습하므로 단순 실행 확인용 호출로 사용하지 않습니다.
 - `/api/model-status`는 CNN 상태만 다룹니다. CNN 파일은 있지만 원본 데이터가 없으면 수정 시각 비교에서 오류가 날 수 있습니다.
@@ -386,7 +387,6 @@ node --test tests/forecast.test.cjs
 | F.4 입력 오류 | 숫자형 `training_elapsed_months` 전달 여부 |
 | 시간별 조회 오류 | ISO 일시, 미래 여부, `base_psf1` 정수 범위 |
 | 모델·특성 불일치 | 파일과 설정·전처리·직렬화 환경 비교 |
-| GMM 버전 경고 | 저장 당시와 현재 scikit-learn 환경 비교 |
 | CNN API 실패 | 학습 원본·CNN 파일 확인. 기본 CatBoost 경로와 구분 |
 | 포트 8000 사용 중 | 기존 서버 확인 또는 Flask CLI로 다른 포트 지정 |
 
