@@ -64,6 +64,12 @@ def load_catboost_model(psf_id):
             f"actual={actual_features}"
         )
 
+    # Raw PSF6 categories must not be confused with numeric encodings that
+    # happen to have the same 14 column names.
+    for key in ("input_schema", "input_schema_sha256"):
+        if key in config and model.get_metadata().get(key) != config[key]:
+            raise ValueError(f"PSF{psf_id} CatBoost 입력 스키마 불일치: {key}")
+
     catboost_models[psf_id] = model
 
     print(
@@ -319,7 +325,7 @@ def predict_psf_catboost_test(
     # ----------------------------------------
 
     model_input_dict = {
-        name: int(value)
+        name: value if psf_id == 6 else int(value)
         for name, value
         in zip(
             feature_names,

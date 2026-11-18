@@ -1,3 +1,9 @@
+from config.environment_schema import (
+    ENVIRONMENT_FEATURES, ENVIRONMENT_MODEL_FILENAME,
+    ENVIRONMENT_SCHEMA_SHA256, ENVIRONMENT_SCHEMA_VERSION,
+)
+
+
 # =====================================================
 # CatBoost 모델 설정
 # =====================================================
@@ -127,50 +133,10 @@ CATBOOST_CONFIG = {
     },
 
     6: {
-        "filename": "환경_catboost.cbm",
-        "features": [
-            (
-                "Thermal_Comfort",
-                [
-                    "F.6.S.10",
-                    "F.6.S.11",
-                    "F.6.S.12",
-                ],
-            ),
-            (
-                "Visual_Environment",
-                [
-                    "F.6.S.14",
-                    "F.6.S.6",
-                    "F.6.S.7",
-                ],
-            ),
-            (
-                "Surface_Safety",
-                [
-                    "F.6.S.9",
-                    "F.6.S.2",
-                ],
-            ),
-            (
-                "Workspace",
-                ["F.6.S.8"],
-            ),
-            (
-                "Acoustic_Environment",
-                ["F.6.S.13"],
-            ),
-            (
-                "Outdoor_Climate",
-                [
-                    "F.6.S.4",
-                    "F.6.S.3",
-                    "F.6.S.1",
-                    "F.6.S.5",
-                    "F.6.S.2",
-                ],
-            ),
-        ],
+        "filename": ENVIRONMENT_MODEL_FILENAME,
+        "features": ENVIRONMENT_FEATURES,
+        "input_schema": ENVIRONMENT_SCHEMA_VERSION,
+        "input_schema_sha256": ENVIRONMENT_SCHEMA_SHA256,
     },
 
     7: {

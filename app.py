@@ -114,13 +114,15 @@ def predict():
                 psf_input = data.get(legacy_key)
 
             if psf_input is None:
+                if psf_id == 6 and (request_key in data or legacy_key in data):
+                    raise ValueError("F.6 입력은 14개 문항을 포함한 JSON 객체여야 합니다.")
                 continue
 
             if psf_id == 4:
                 result = predict_psf4_formula(
                     psf_input
                 )
-            elif psf_input:
+            elif psf_input or psf_id == 6:
                 # 모델 교체 위치
                 # result = predict_psf(
                 #     psf_id,
@@ -252,6 +254,12 @@ def predict_single(psf_id):
             "result": result,
         })
 
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+        }), 400
+
     except Exception as e:
 
         return jsonify({
@@ -310,7 +318,7 @@ def predict_catboost():
                     legacy_key
                 )
 
-            if psf_input:
+            if psf_input or (psf_id == 6 and (request_key in data or legacy_key in data)):
 
                 result = (
                     predict_psf_catboost(
@@ -327,6 +335,12 @@ def predict_catboost():
             "success": True,
             "results": results,
         })
+
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+        }), 400
 
     except Exception as e:
 
@@ -364,6 +378,12 @@ def predict_catboost_single(
             "success": True,
             "result": result,
         })
+
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+        }), 400
 
     except Exception as e:
 
@@ -537,6 +557,12 @@ def test_predict_single(psf_id):
             "success": True,
             "result": result,
         })
+
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+        }), 400
 
     except Exception as e:
 

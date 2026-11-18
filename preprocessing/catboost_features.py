@@ -4,11 +4,14 @@ import joblib
 import numpy as np
 
 from config.paths import GMM_MODEL_DIR
-from config.mappings import (
-    code_to_value,
-    get_condition_value,
+from config.mappings import get_condition_value
+from config.catboost_mappings import (
+    CATBOOST_ALLOWED_VALUES,
+    CATBOOST_CODE_TO_VALUE,
+    canonical_condition_key,
 )
 from config.catboost_config import CATBOOST_CONFIG
+from preprocessing.environment_features import build_environment_features
 
 
 # =====================================================
@@ -18,7 +21,6 @@ from config.catboost_config import CATBOOST_CONFIG
 GMM_PSF_IDS = {
     2,
     4,
-    6,
     8,
 }
 
@@ -39,11 +41,13 @@ def normalize_catboost_condition(
     condition_key,
 ):
     """
-    다음 형식을 모두 0 / 1 / 2로 변환한다.
+    PSF6 이외의 선택 코드를 학습 당시 숫자로 변환한다.
+    PSF6의 기존 숫자 매핑은 검증·호환용이며 실제 추론은 원래 범주를 사용한다.
+    숫자 입력은 이미 학습 인코딩된 값이며 문항별 허용 범위를 검사한다.
 
     예:
-        F.6.S.10.1
-        F.6.10.1
+        F.2.S.1.1
+        F.2.1.1
         0
         1
         2
@@ -52,15 +56,25 @@ def normalize_catboost_condition(
         "2"
     """
 
+    # PSF6 runtime uses raw categories via environment_features instead.
+    condition_key = canonical_condition_key(condition_key)
+    if condition_key not in CATBOOST_ALLOWED_VALUES:
+        raise ValueError(f"지원하지 않는 문항입니다: {condition_key}")
+
     # ---------------------------------
     # F.x.S.x.x 코드
     # ---------------------------------
 
     if (
         isinstance(value, str)
-        and value in code_to_value
+        and value in CATBOOST_CODE_TO_VALUE
     ):
-        value = code_to_value[value]
+        code_field = canonical_condition_key(value.rsplit(".", 1)[0])
+        if code_field != condition_key:
+            raise ValueError(
+                f"{condition_key}에 다른 문항의 선택 코드를 사용할 수 없습니다: {value}"
+            )
+        value = CATBOOST_CODE_TO_VALUE[value]
 
     # ---------------------------------
     # 숫자 문자열
@@ -76,7 +90,7 @@ def normalize_catboost_condition(
             raise ValueError(
                 f"{condition_key} 값은 "
                 f"F.n.S.n.n 코드 또는 "
-                f"0/1/2 숫자여야 합니다: "
+                f"문항별 학습 인코딩 숫자여야 합니다: "
                 f"{value}"
             ) from exc
 
@@ -104,12 +118,14 @@ def normalize_catboost_condition(
     if (
         not np.isfinite(value)
         or float(value)
-        not in (0.0, 1.0, 2.0)
+        not in CATBOOST_ALLOWED_VALUES[condition_key]
     ):
+        allowed = ", ".join(
+            str(number) for number in sorted(CATBOOST_ALLOWED_VALUES[condition_key])
+        )
         raise ValueError(
-            f"{condition_key} 값은 "
-            f"0, 1, 2 중 하나여야 합니다: "
-            f"{value}"
+            f"{condition_key}의 학습 인코딩 값은 {allowed} 중 하나여야 합니다: "
+            f"{value}. 숫자의 의미가 불확실하면 해당 문항의 선택 코드를 사용하세요."
         )
 
     return int(value)
@@ -124,7 +140,7 @@ def load_gmm_bundle(psf_id):
     PSF별 저장된 GMM bundle을 로드한다.
 
     예:
-        models/gmm/psf6_gmm.joblib
+        models/gmm/psf2_gmm.joblib
     """
 
     if psf_id not in GMM_PSF_IDS:
@@ -179,7 +195,7 @@ def predict_composite_feature(
     복합 Feature를 계산한다.
 
     예:
-        [실내온도, 실내습도, 통풍]
+        [작업 도구의 적절성, 장비의 사용성]
         -> GMM cluster
         -> label_map
         -> 0 / 1 / 2
@@ -293,6 +309,8 @@ def build_catboost_features(
     기존 API 입력을
     CatBoost 학습 당시 Feature 형태로 변환한다.
 
+    PSF6은 GMM 없이 원래 14개 응답 범주를 반환한다.
+
     단일 변수:
         0 / 1 / 2 직접 사용
 
@@ -317,6 +335,9 @@ def build_catboost_features(
             f"지원하지 않는 PSF ID입니다: "
             f"{psf_id}"
         )
+
+    if psf_id == 6:
+        return build_environment_features(conditions)
 
     config = CATBOOST_CONFIG[
         psf_id

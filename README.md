@@ -120,7 +120,7 @@ PSF 결과는 `psfResults`, 직종은 `selectedRole` 키로 `sessionStorage`에 
 | F.3 | 절차 및 지침 | CatBoost | 좋음 / 보통 / 나쁨 |
 | F.4 | 교육 및 훈련 | 경과 개월 수 공식 | 좋음 / 보통 / 나쁨 |
 | F.5 | 의사소통 | CatBoost | 보통 / 나쁨 |
-| F.6 | 환경 | GMM 특성 + CatBoost | 보통 / 나쁨 |
+| F.6 | 환경 | 원래 14개 범주 + CatBoost (GMM 없음) | 보통 / 나쁨 |
 | F.7 | 작업절차 | CatBoost | 좋음 / 보통 / 나쁨 |
 | F.8 | 복잡성 | GMM 특성 + CatBoost | 보통 / 약간 높음 / 매우 높음 |
 
@@ -248,9 +248,30 @@ POST 요청은 `Content-Type: application/json`을 사용합니다. 기본 API�
 }
 ```
 
-최상위 키는 `F.1`–`F.8`이고 기존 `psf1`–`psf8`도 지원합니다. CatBoost 문항 값은 0/1/2, 숫자 문자열 또는 등록된 선택 코드를 사용할 수 있습니다. 문항 키는 기존 `F.1.1` 형식도 지원합니다. 정확한 코드와 모델 특성은 `config/`를 확인합니다.
+최상위 키는 `F.1`–`F.8`이고 기존 `psf1`–`psf8`도 지원합니다. CatBoost 문항 값은 등록된 선택 코드를 권장합니다. PSF6은 원래 응답 문구도 지원하고, 다른 PSF는 **학습 당시 인코딩된 숫자**도 지원합니다. 숫자 문자열과 기존 `F.1.1` 형식의 문항 키·선택 코드도 지원합니다. 숫자는 보기 번호나 모든 문항에 공통인 위험 등급이 아닙니다.
 
-요청에 없는 PSF는 건너뜁니다. CatBoost 하위 문항 누락 시에는 전처리 기본값 1이 사용되므로 실제 분석에서는 전체 문항을 명시합니다. 단일 CatBoost API에는 위 최상위 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
+### CatBoost 입력 인코딩
+
+`config/catboost_mappings.py`는 `processed_data/subpsf_level_mapping.xlsx`를 기준으로 PSF1·2·3·4·5·7·8 및 기존 PSF6의 숫자 인코딩을 정의합니다. 현재 PSF6은 `config/environment_schema.py`의 원래 14개 응답 범주를 사용합니다. 화면의 각 선택지에는 `data-condition-code`가 명시되어 있으며, `static/input-encoding.js`가 이 코드를 읽으므로 보기 순서를 바꾸어도 같은 답변의 코드가 유지됩니다.
+
+| 문항 | 응답 | 선택 코드 | 모델 입력값 |
+| --- | --- | --- | --- |
+| 수면시간 | 8시간 이상 | `F.1.S.3.3` | 0 |
+| 수면시간 | 6시간 이내 | `F.1.S.3.1` | 2 |
+| 장비 가용성 | 낮음 | `F.2.S.1.2` | 1 |
+| 실내 온도 | 17℃ 이하 / 17~28℃ / 28℃ 이상 | `F.6.S.10.1` / `.2` / `.3` | 서로 다른 원래 응답 문자열 3개 |
+| 황사 | 사물 식별 불가 / 숨쉬기 불편 | `F.6.S.7.1` / `.2` | 서로 다른 원래 응답 문자열 2개 |
+| 직무능력 평가 빈도 | 6개월 / 1년 / 3년 | `F.4.S.4.1` / `.2` / `.3` | 1 / 0 / 2 |
+
+PSF2·4·8의 CatBoost 경로는 기존 숫자 인코딩과 저장된 GMM을 유지합니다. PSF6은 선택 코드를 원래 응답 문자열로 복원해 14개 범주형 특성으로 전달합니다. 실내 온도·습도의 낮음/중간/높음을 별도 범주로 보존하며, GMM의 6개 복합 특성이나 기존의 1/0/1로 합치지 않습니다.
+
+**PSF6 입력 계약:** 14개 문항을 모두 전달해야 합니다. 누락·다른 문항의 코드·충돌하는 별칭은 HTTP 400을 반환합니다. 기존 숫자는 원래 범주가 하나로 결정될 때만 호환합니다. 특히 실내 온도·습도 숫자 `1`은 낮음과 높음을 구별할 수 없어 거부하고, 숫자 `0`은 중간 범주로 해석합니다. 숫자 `2`를 높은 수준으로 추측하지 않습니다. 화면은 이미 선택 코드를 전송하므로 이 제약에 맞게 동작합니다.
+
+예를 들어 `"F.6.S.10": "F.6.S.10.3"`은 실내 온도 28℃ 이상 범주를 정확히 전달합니다. 기존 `F.6.10` 문항 키와 `F.6.10.3` 선택 코드도 지원합니다. PSF6의 원문에서 강수량 단위가 `mm/s`로 기재된 범주는 학습 토큰의 일치를 위해 그대로 유지합니다. 이는 단위의 물리적 타당성을 검증했다는 뜻이 아닙니다.
+
+`config/mappings.py`의 텍스트 맵과 `code_to_value`는 기존 CNN용으로 유지합니다. HEP 계산식과 기본 F.4의 경과 개월 수 공식은 변경하지 않았습니다. 서버를 재시작한 후 설문을 다시 제출해야 하며, 이전 `sessionStorage` 결과는 자동 재계산되지 않습니다.
+
+요청에 없는 PSF는 건너뜁니다. **PSF6은 하위 문항을 임의로 채우지 않습니다.** 다른 CatBoost PSF의 기존 하위 문항 기본값 1 처리는 유지하므로 실제 분석에서는 전체 문항을 명시합니다. 단일 CatBoost API에는 최상위 PSF 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
 
 성공 응답은 `{"success": true, "results": [...]}`이며 단일 예측은 `result` 객체를 사용합니다.
 
@@ -295,7 +316,7 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/psf1/predict' -Co
 }
 ```
 
-기본 API의 `ValueError`와 시간·월별 API의 입력 검증 오류는 HTTP 400, 기타 실행 오류는 500을 반환합니다. 단일 CatBoost 등 보조 경로는 입력 오류도 500으로 반환할 수 있습니다. 상태 코드와 `success`·`error`를 함께 확인합니다.
+기본·단일·CatBoost 별칭·모델 검증 API의 `ValueError`와 시간·월별 API의 입력 검증 오류는 HTTP 400, 기타 실행 오류는 500을 반환합니다. 상태 코드와 `success`·`error`를 함께 확인합니다.
 
 ## 프로젝트 구조
 
@@ -308,19 +329,21 @@ Railway_hep/
 ├── detail_result.html           # 상세·HEP 계산·그래프 연결
 ├── config/                      # 경로, 수준 코드, CatBoost 특성
 ├── preprocessing/
-│   └── catboost_features.py     # 입력 정규화·GMM 특성
+│   ├── catboost_features.py     # 공통 입력·PSF2/4/8 GMM 특성
+│   └── environment_features.py  # PSF6 원래 14개 범주
 ├── predictors/
 │   ├── catboost.py              # CatBoost 로드·예측
 │   ├── psf1_forecast.py          # 시간별 F.1
 │   ├── psf4_formula.py           # F.4 공식·월별 예측
 │   └── cnn.py                   # 기존 CNN 학습·예측
-├── models/                      # CatBoost 8개, gmm/ 번들 4개
+├── models/                      # 현재 CatBoost 8개 + 이전 환경 모델, GMM 3개 + 이전 환경 GMM
+├── training/train_environment_raw14.py  # PSF6 재학습·선택적 GroupKFold 평가
 ├── static/                      # 실제 화면 CSS·forecast.js
 ├── static copy/                 # 디자인 참고용 CSS
 ├── images/                      # 화면 이미지
 ├── processed_data/              # 포함된 수준 매핑 XLSX 등
 ├── output/                      # 그래프 예시 코드·산출물
-├── tests/forecast.test.cjs       # 기존 Node.js 테스트
+├── tests/                       # Python 모델/API·Node.js 화면/그래프 테스트
 ├── env_preprocess_v1.ipynb       # 환경 전처리 노트북
 └── saved_models/                # 실행 시 생성되는 기존 CNN 모델 경로
 ```
@@ -329,13 +352,34 @@ Railway_hep/
 
 ## 모델과 데이터 관리
 
-- CatBoost 모델 8개와 GMM 번들 4개가 포함되어 있습니다. F.4 모델과 GMM은 보조 CatBoost 경로에서 사용합니다.
+- 현재 CatBoost 경로는 모델 8개와 PSF2·4·8의 GMM 번들 3개를 사용합니다. PSF6은 `models/환경_raw14_catboost.cbm`을 사용합니다. 이전 `환경_catboost.cbm`과 `gmm/psf6_gmm.joblib`은 비교·복구용으로 보존하며 현재 추론에서는 읽지 않습니다. F.4 모델과 GMM은 보조 CatBoost 경로에서 사용합니다.
 - 모델은 최초 사용 시 로드되고 메모리에 캐시됩니다. 교체 후에는 서버를 재시작합니다.
-- CatBoost 특성 이름·순서, 클래스, GMM 번들 구조가 설정과 일치해야 합니다. 모델 교체 시 전처리도 확인합니다.
+- CatBoost 특성 이름·순서, 클래스, GMM 번들 구조가 설정과 일치해야 합니다. PSF6은 모델 안의 입력 스키마 버전·해시도 검증하므로 같은 열 이름을 쓰는 숫자 인코딩 모델로 잘못 교체할 수 없습니다.
 - 학습 원본 `4.20 설문조사 결과.txt`는 포함되어 있지 않습니다. 기존 CNN 학습은 `config/paths.py`의 이 경로를 요구합니다.
 - `/api/retrain`은 기존 CNN 파일을 삭제한 뒤 학습하므로 단순 실행 확인용 호출로 사용하지 않습니다.
 - `/api/model-status`는 CNN 상태만 다룹니다. CNN 파일은 있지만 원본 데이터가 없으면 수정 시각 비교에서 오류가 날 수 있습니다.
 - `.gitignore`는 일부 원본 CSV 경로, Python 캐시, 가상환경, 환경 변수 등을 제외합니다. 모든 데이터·학습 산출물을 자동 제외하지는 않으므로 `git status`를 확인합니다.
+
+### PSF6 원변수 모델 재학습
+
+```bash
+python -B training/train_environment_raw14.py --cross-validate
+```
+
+`철도_코레일 종사자 설문조사 결과.txt`와 `CatBoost_Result/preprocess_v1.4.ipynb`가 필요합니다. 스크립트는 해시로 고정한 노트북의 지정된 전처리 셀만 읽어 기존 `quality_95 == 성실` 기준을 재현합니다. 원본, 노트북, 기존 모델을 수정하지 않습니다. 노트북이 변경되면 지정 셀을 검토하기 전에는 실행을 중단합니다.
+
+원본 설문과 `CatBoost_Result/`의 로컬 분석 노트북은 이 저장소의 배포 파일에 포함하지 않습니다. 재학습하려면 승인된 원본 자료를 위 경로에 별도로 준비해야 합니다. 포함된 모델을 이용한 추론과 회귀 테스트에는 이 원본 자료가 필요하지 않습니다.
+
+CatBoost 설정은 기존 비교 실험과 같은 500회, depth 6, learning rate 0.05, random seed 42이며 전체 설정·라이브러리 버전·원본 해시를 `models/environment_raw14_metadata.json`에 기록합니다. 모든 14개 특성은 문자열 범주형입니다. 가중치나 분류 임계값은 바꾸지 않습니다. `--cross-validate`를 생략하면 교차검증 없이 최종 모델만 학습하고 보고서를 새로 작성합니다. 다른 위치에서 검토하려면 `--output-dir <경로>`를 사용합니다. `/api/retrain`은 이 모델을 재학습하지 않습니다.
+
+2026-11-18 재현 결과는 다음과 같습니다. 실제 응답은 보통 805건·나쁨 2,145건이고, 응답 2,950건에는 서로 다른 원래 시나리오 2,762개가 있습니다.
+
+| 평가 구분 | 보통 예측 | 나쁨 예측 | 해석 |
+| --- | ---: | ---: | --- |
+| 전체 데이터로 학습한 저장 모델 → 학습 데이터 재예측 | 64건 (2.17%) | 2,886건 (97.83%) | 학습 내 결과, 일반화 성능 아님 |
+| 원래 시나리오 기준 5-fold GroupKFold OOF | 132건 (4.47%) | 2,818건 (95.53%) | 해당 시나리오를 학습에서 제외한 예측 |
+
+위 비율은 응답 건수 기준이며 모든 가능한 입력 조합의 비율이 아닙니다. 교차검증에서는 동일한 14개 원변수 조합을 같은 그룹에 넣고 `shuffle=False`로 분할합니다. 응답자 단위 분리나 외부 검증은 아닙니다. OOF 보통 재현율은 **6.71%**, 균형 정확도는 **51.54%**여서 원변수 적용만으로 편향이나 분류 성능 문제가 해결됐다고 볼 수 없습니다. 학습 데이터에는 안개·낙뢰의 ‘발생하지 않은 경우’가 없어 해당 범주의 효과를 검증할 수 없으며, 미관측 범주도 메타데이터에 기록합니다.
 
 ## 검증과 개발
 
@@ -349,6 +393,15 @@ node --test tests/forecast.test.cjs
 
 월별 601개 값 처리, HEP 계산, 시간 구간, 다른 PSF 유지, 팝업 동작·입력·API 오류 처리 등을 확인합니다. 실제 모델 정확도, 모든 Flask 경로, 브라우저 전체 동작까지 검증하는 테스트는 아닙니다.
 
+### 입력 인코딩 회귀 검증
+
+```bash
+python -B -m unittest discover -s tests -p "test_*.py" -v
+node --test tests/input-encoding.test.cjs
+```
+
+57개 문항의 157개 화면 선택지를 XLSX 기준표와 대조하고, 선택 코드·기존 별칭·숫자 입력 검증 및 PSF2·4·8의 실제 GMM 특성 생성을 확인합니다. PSF6의 32개 선택지는 원문 문자열·14개 특성 순서와 별도로 대조하며, 온도·습도 세 수준 보존, GMM 미사용, 저장 모델의 입력 스키마, 모든 예측 API 별칭의 두 클래스 출력과 오류 응답을 검증합니다. 화면 코드 검증은 선택지 순서·문구 변경에도 코드가 유지되는지 확인합니다. XLSX는 테스트에서 Python 표준 라이브러리로 읽으며, 모델 전처리 테스트에는 프로젝트의 Python 의존성이 필요합니다.
+
 ### 기능 확인 순서
 
 1. `/`에서 화면·CSS·이미지가 로드되는지 확인합니다.
@@ -359,7 +412,7 @@ node --test tests/forecast.test.cjs
 
 | 변경 대상 | 함께 확인할 파일 |
 | --- | --- |
-| 문항·코드 | `input.html`, `config/mappings.py`, 특성 정의·전처리 |
+| 문항·코드 | `input.html`, `static/input-encoding.js`, `config/catboost_mappings.py`, `config/environment_schema.py`, 매핑 XLSX·특성 정의·전처리 |
 | 모델·특성 | `models/`, `config/catboost_config.py`, `preprocessing/` |
 | HEP 계수·배수 | `result.html`, `detail_result.html`, 관련 그래프 테스트 |
 | 시간·월별 예측 | 두 예측 모듈, `app.py`, `static/forecast.js` |

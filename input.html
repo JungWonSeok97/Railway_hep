@@ -60,9 +60,9 @@
           <span class="label-text">근무시간</span>
           <select class="room-select" id="worktimeSelect">
             <option value="" disabled selected hidden>근무시간을 선택하세요.</option>
-            <option value="room1">8시간 미만 근무할 경우</option>
-            <option value="room2">8~12시간 사이에 근무할 경우</option>
-            <option value="room3">12시간 이상 근무할 경우</option>
+            <option value="room1" data-condition-code="F.1.S.1.1">8시간 미만 근무할 경우</option>
+            <option value="room2" data-condition-code="F.1.S.1.2">8~12시간 사이에 근무할 경우</option>
+            <option value="room3" data-condition-code="F.1.S.1.3">12시간 이상 근무할 경우</option>
           </select>
         </label>
       </div>
@@ -72,9 +72,9 @@
           <span class="label-text">작업시간</span>
           <select class="room-select" id="workhourSelect">
             <option value="" disabled selected hidden>작업시간을 선택하세요.</option>
-            <option value="room1">근무시간의 50% 미만일 경우</option>
-            <option value="room2">근무시간의 50~80% 사이일 경우</option>
-            <option value="room3">근무시간의 80% 이상일 경우</option>
+            <option value="room1" data-condition-code="F.1.S.2.1">근무시간의 50% 미만일 경우</option>
+            <option value="room2" data-condition-code="F.1.S.2.2">근무시간의 50~80% 사이일 경우</option>
+            <option value="room3" data-condition-code="F.1.S.2.3">근무시간의 80% 이상일 경우</option>
           </select>
         </label>
       </div>
@@ -84,9 +84,9 @@
           <span class="label-text">수면시간</span>
           <select class="room-select" id="sleeptimeSelect">
             <option value="" disabled selected hidden>수면시간을 선택하세요.</option>
-            <option value="room1">8시간 이상인 경우</option>
-            <option value="room2">6~8시간 사이인 경우</option>
-            <option value="room3">6시간 이내인 경우</option>
+            <option value="room1" data-condition-code="F.1.S.3.3">8시간 이상인 경우</option>
+            <option value="room2" data-condition-code="F.1.S.3.2">6~8시간 사이인 경우</option>
+            <option value="room3" data-condition-code="F.1.S.3.1">6시간 이내인 경우</option>
           </select>
         </label>
       </div>
@@ -96,9 +96,9 @@
           <span class="label-text">작업 허용 시간</span>
           <select class="room-select" id="workpermissiontimeSelect">
             <option value="" disabled selected hidden>작업 허용 시간을 선택하세요.</option>
-            <option value="room1">평상 시와 동일 하거나 느리게 해도 될 만큼의 여유시간이 주어진 상황일 경우</option>
-            <option value="room2">평상 시보다 25%이내로 빠르게 해야 하는 상황일 경우</option>
-            <option value="room3">평상 시보다 25% 이상 빠르게 해야 하는 상황일 경우</option>
+            <option value="room1" data-condition-code="F.1.S.4.1">평상 시와 동일 하거나 느리게 해도 될 만큼의 여유시간이 주어진 상황일 경우</option>
+            <option value="room2" data-condition-code="F.1.S.4.2">평상 시보다 25%이내로 빠르게 해야 하는 상황일 경우</option>
+            <option value="room3" data-condition-code="F.1.S.4.3">평상 시보다 25% 이상 빠르게 해야 하는 상황일 경우</option>
           </select>
         </label>
       </div>
@@ -108,9 +108,9 @@
           <span class="label-text">근무시간대</span>
           <select class="room-select" id="workinghoursSelect">
             <option value="" disabled selected hidden>근무시간대를 선택하세요.</option>
-            <option value="room1">9시~18시인 경우</option>
-            <option value="room2">야간근무 심야조</option>
-            <option value="room3">야간근무 비심야조</option>
+            <option value="room1" data-condition-code="F.1.S.5.1">9시~18시인 경우</option>
+            <option value="room2" data-condition-code="F.1.S.5.2">야간근무 심야조</option>
+            <option value="room3" data-condition-code="F.1.S.5.3">야간근무 비심야조</option>
           </select>
         </label>
       </div>
@@ -125,8 +125,8 @@
           <span class="label-text">장비 가용성(접근성)</span>
           <select class="room-select" id="systemabailabilitySelect">
             <option value="" disabled selected hidden>장비 가용성을 선택하세요.</option>
-            <option value="room1">업무에 필요한 장비의 가용성이 높은 경우</option>
-            <option value="room2">업무에 필요한 장비의 가용성이 낮은 경우</option>
+            <option value="room1" data-condition-code="F.2.S.1.1">업무에 필요한 장비의 가용성이 높은 경우</option>
+            <option value="room2" data-condition-code="F.2.S.1.2">업무에 필요한 장비의 가용성이 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -136,9 +136,9 @@
           <span class="label-text">작업 도구의 적절성</span>
           <select class="room-select" id="suitability-of-work-tool-select">
             <option value="" disabled selected hidden>작업도구의 적절성을 선택하세요.</option>
-            <option value="room1">사용하는 작업도구의 적절성이 우수한 경우</option>
-            <option value="room2">사용하는 작업도구의 적절성이 보통한 경우</option>
-            <option value="room3">사용하는 작업도구의 적절성이 미흡한 경우</option>
+            <option value="room1" data-condition-code="F.2.S.2.1">사용하는 작업도구의 적절성이 우수한 경우</option>
+            <option value="room2" data-condition-code="F.2.S.2.2">사용하는 작업도구의 적절성이 보통한 경우</option>
+            <option value="room3" data-condition-code="F.2.S.2.3">사용하는 작업도구의 적절성이 미흡한 경우</option>
           </select>
         </label>
       </div>
@@ -148,9 +148,9 @@
           <span class="label-text">컴퓨터 지원 시스템의 적절성</span>
           <select class="room-select" id="adequacy-of-computer-aided-system-select">
             <option value="" disabled selected hidden>컴퓨터 시스템의 적절성을 선택하세요.</option>
-            <option value="room1">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 우수한 경우</option>
-            <option value="room2">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 보통인 경우</option>
-            <option value="room3">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 미흡한 경우</option>
+            <option value="room1" data-condition-code="F.2.S.3.1">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 우수한 경우</option>
+            <option value="room2" data-condition-code="F.2.S.3.2">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.2.S.3.3">업무에 사용되는 컴퓨터지원시스템(운행정보시스템, 운행관리시스템, 업무용 소프트웨어 등)이 미흡한 경우</option>
           </select>
         </label>
       </div>
@@ -160,9 +160,9 @@
           <span class="label-text">장비의 사용성</span>
           <select class="room-select" id="usability-of-equipment-select">
             <option value="" disabled selected hidden>장비 사용성을 선택하세요.</option>
-            <option value="room1">업무에 필요한 장비의 사용성이 우수한 경우</option>
-            <option value="room2">업무에 필요한 장비의 사용성이 보통인 경우</option>
-            <option value="room3">업무에 필요한 장비의 사용성이 미흡한 경우</option>
+            <option value="room1" data-condition-code="F.2.S.4.1">업무에 필요한 장비의 사용성이 우수한 경우</option>
+            <option value="room2" data-condition-code="F.2.S.4.2">업무에 필요한 장비의 사용성이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.2.S.4.3">업무에 필요한 장비의 사용성이 미흡한 경우</option>
           </select>
         </label>
       </div>
@@ -172,9 +172,9 @@
           <span class="label-text">장비 사용 매뉴얼의 질</span>
           <select class="room-select" id="quality-of-equipment-user-manual-select">
             <option value="" disabled selected hidden>장비 사용 매뉴얼의 질을 선택하세요.</option>
-            <option value="room1">장비 사용 매뉴얼의 질이 우수한 경우</option>
-            <option value="room2">장비 사용 매뉴얼의 질이 보통인 경우</option>
-            <option value="room3">장비 사용 매뉴얼의 질이 미흡한 경우</option>
+            <option value="room1" data-condition-code="F.2.S.5.1">장비 사용 매뉴얼의 질이 우수한 경우</option>
+            <option value="room2" data-condition-code="F.2.S.5.2">장비 사용 매뉴얼의 질이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.2.S.5.3">장비 사용 매뉴얼의 질이 미흡한 경우</option>
           </select>
         </label>
       </div>
@@ -184,9 +184,9 @@
           <span class="label-text">타 기기와의 연계성</span>
           <select class="room-select" id="connectivity-with-other-devices-select">
             <option value="" disabled selected hidden>타 기기와의 연계성을 선택하세요.</option>
-            <option value="room1">사용하는 장비가 타 기기와의 연계성이 우수한 경우</option>
-            <option value="room2">사용하는 장비가 타 기기와의 연계성이 보통인 경우</option>
-            <option value="room3">사용하는 장비가 타 기기와의 연계성이 미흡한 경우</option>
+            <option value="room1" data-condition-code="F.2.S.6.1">사용하는 장비가 타 기기와의 연계성이 우수한 경우</option>
+            <option value="room2" data-condition-code="F.2.S.6.2">사용하는 장비가 타 기기와의 연계성이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.2.S.6.3">사용하는 장비가 타 기기와의 연계성이 미흡한 경우</option>
           </select>
         </label>
       </div>
@@ -196,9 +196,9 @@
           <span class="label-text">유지보수의 적절성</span>
           <select class="room-select" id="adequacy-of-maintenance-select">
             <option value="" disabled selected hidden>유지보수의 적절성을 선택하세요.</option>
-            <option value="room1">사용하는 장비가 매우 적절하게 유지보수 되는 경우</option>
-            <option value="room2">사용하는 장비가 일반적으로 유지보수 되는 경우</option>
-            <option value="room3">사용하는 장비가 미흡하게 유지보수 되는 경우</option>
+            <option value="room1" data-condition-code="F.2.S.7.1">사용하는 장비가 매우 적절하게 유지보수 되는 경우</option>
+            <option value="room2" data-condition-code="F.2.S.7.2">사용하는 장비가 일반적으로 유지보수 되는 경우</option>
+            <option value="room3" data-condition-code="F.2.S.7.3">사용하는 장비가 미흡하게 유지보수 되는 경우</option>
           </select>
         </label>
       </div>
@@ -214,8 +214,8 @@
           <span class="label-text">(직무)절차의 유무(가용성)</span>
           <select class="room-select" id="presence-or-absence-of-procedure-select">
             <option value="" disabled selected hidden>(직무)절차의 유무(가용성)을 선택하세요.</option>
-            <option value="room1">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 높은 경우</option>
-            <option value="room2">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 낮은 경우</option>
+            <option value="room1" data-condition-code="F.3.S.1.1">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 높은 경우</option>
+            <option value="room2" data-condition-code="F.3.S.1.2">직무를 수행하는 데 필요한 절차의 가용성(접근성)이 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -225,9 +225,9 @@
           <span class="label-text">(직무)절차 기술의 복잡성</span>
           <select class="room-select" id="complexity-of-procedural-techniques-select">
             <option value="" disabled selected hidden>(직무)절차 기술(description)의 복잡성을 선택하세요.</option>
-            <option value="room1">직무를 수행하는 데 필요한 절차의 복잡성이 낮은 경우</option>
-            <option value="room2">직무를 수행하는 데 필요한 절차의 복잡성이 보통인 경우</option>
-            <option value="room3">직무를 수행하는 데 필요한 절차의 복잡성이 높은 경우</option>
+            <option value="room1" data-condition-code="F.3.S.2.3">직무를 수행하는 데 필요한 절차의 복잡성이 낮은 경우</option>
+            <option value="room2" data-condition-code="F.3.S.2.2">직무를 수행하는 데 필요한 절차의 복잡성이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.3.S.2.1">직무를 수행하는 데 필요한 절차의 복잡성이 높은 경우</option>
           </select>
         </label>
       </div>
@@ -237,9 +237,9 @@
           <span class="label-text">(직무)절차의 명료성(구체성)</span>
           <select class="room-select" id="clarity-of-procedure-select">
             <option value="" disabled selected hidden>(직무)절차의 명료성(구체성)을 선택하세요.</option>
-            <option value="room1">직무 절차서 내용의 명료성이 높은 경우</option>
-            <option value="room2">직무 절차서 내용의 명료성이 보통인 경우</option>
-            <option value="room3">직무 절차서 내용의 명료성이 낮은 경우</option>
+            <option value="room1" data-condition-code="F.3.S.3.1">직무 절차서 내용의 명료성이 높은 경우</option>
+            <option value="room2" data-condition-code="F.3.S.3.2">직무 절차서 내용의 명료성이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.3.S.3.3">직무 절차서 내용의 명료성이 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -249,9 +249,9 @@
           <span class="label-text">(직무)절차의 적절성</span>
           <select class="room-select" id="adequacy-of-procedure-select">
             <option value="" disabled selected hidden>(직무)절차의 적절성(완전성 포함)을 선택하세요.</option>
-            <option value="room1">직무 절차서 내용이 매우 적절하게 업무에 도움이 되는 경우</option>
-            <option value="room2">직무 절차서 내용이 전반적으로 적절하게 업무에 도움이 되는 경우</option>
-            <option value="room3">직무 절차서 내용이 부적절하거나 미흡하게 제공되는 경우</option>
+            <option value="room1" data-condition-code="F.3.S.4.1">직무 절차서 내용이 매우 적절하게 업무에 도움이 되는 경우</option>
+            <option value="room2" data-condition-code="F.3.S.4.2">직무 절차서 내용이 전반적으로 적절하게 업무에 도움이 되는 경우</option>
+            <option value="room3" data-condition-code="F.3.S.4.3">직무 절차서 내용이 부적절하거나 미흡하게 제공되는 경우</option>
           </select>
         </label>
       </div>
@@ -260,9 +260,9 @@
           <span class="label-text">(직무)절차의 일관성</span>
           <select class="room-select" id="consistency-of-procedure-select">
             <option value="" disabled selected hidden>(직무)절차의 일관성을 선택하세요.</option>
-            <option value="room1">직무 절차서 내용이 매우 일관되게 표현되어 있는 경우</option>
-            <option value="room2">직무 절차서 내용이 전반적으로 일관되게 표현되어 있는 경우</option>
-            <option value="room3">직무 절차서 내용의 일관성이 부족한 경우</option>
+            <option value="room1" data-condition-code="F.3.S.5.1">직무 절차서 내용이 매우 일관되게 표현되어 있는 경우</option>
+            <option value="room2" data-condition-code="F.3.S.5.2">직무 절차서 내용이 전반적으로 일관되게 표현되어 있는 경우</option>
+            <option value="room3" data-condition-code="F.3.S.5.3">직무 절차서 내용의 일관성이 부족한 경우</option>
           </select>
         </label>
       </div>
@@ -272,9 +272,9 @@
           <span class="label-text">(직무)절차의 추적성</span>
           <select class="room-select" id="process-traceability-select">
             <option value="" disabled selected hidden>(직무)절차의 추적성을 선택하세요.</option>
-            <option value="room1">직무 절차서 추적성이 높은 경우</option>
-            <option value="room2">직무 절차서 추적성이 보통인 경우</option>
-            <option value="room3">직무 절차서 추적성이 낮은 경우</option>
+            <option value="room1" data-condition-code="F.3.S.6.1">직무 절차서 추적성이 높은 경우</option>
+            <option value="room2" data-condition-code="F.3.S.6.2">직무 절차서 추적성이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.3.S.6.3">직무 절차서 추적성이 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -295,9 +295,9 @@
           <span class="label-text">교육/훈련 프로그램 적절성</span>
           <select class="room-select" id="educational-program-suitability-select">
             <option value="" disabled selected hidden>교육/훈련 프로그램 적절성을 선택하세요.</option>
-            <option value="room1">교육/훈련 프로그램이 적절할 경우</option>
-            <option value="room2">교육/훈련 프로그램에 개선할 필요가 있을 경우</option>
-            <option value="room3">교육/훈련 프로그램이 적절하지 않을 경우</option>
+            <option value="room1" data-condition-code="F.4.S.1.1">교육/훈련 프로그램이 적절할 경우</option>
+            <option value="room2" data-condition-code="F.4.S.1.2">교육/훈련 프로그램에 개선할 필요가 있을 경우</option>
+            <option value="room3" data-condition-code="F.4.S.1.3">교육/훈련 프로그램이 적절하지 않을 경우</option>
           </select>
         </label>
       </div>
@@ -307,9 +307,9 @@
           <span class="label-text">교육 주기(빈도)</span>
           <select class="room-select" id="educational-cycle-select">
             <option value="" disabled selected hidden>교육 주기(빈도)를 선택하세요.</option>
-            <option value="room1">교육/훈련 주기(빈도)가 1년 미만일 경우</option>
-            <option value="room2">교육/훈련 주기(빈도)가 1~3년 사이일 경우</option>
-            <option value="room3">교육/훈련 주기(빈도)가 3년 이상일 경우</option>
+            <option value="room1" data-condition-code="F.4.S.2.1">교육/훈련 주기(빈도)가 1년 미만일 경우</option>
+            <option value="room2" data-condition-code="F.4.S.2.2">교육/훈련 주기(빈도)가 1~3년 사이일 경우</option>
+            <option value="room3" data-condition-code="F.4.S.2.3">교육/훈련 주기(빈도)가 3년 이상일 경우</option>
           </select>
         </label>
       </div>
@@ -319,9 +319,9 @@
           <span class="label-text">상황에 대한 경험 정도</span>
           <select class="room-select" id="degree-of-experience-with-the-situation-select">
             <option value="" disabled selected hidden>상황에 대한 경험 정도를 선택하세요.</option>
-            <option value="room1">해야 하는 일의 90% 이상을 경험한 경우</option>
-            <option value="room2">해야 하는 일의 70~90%를 경험한 경우</option>
-            <option value="room3">해야 하는 일의 30% 이상을 경험하지 못한 경우</option>
+            <option value="room1" data-condition-code="F.4.S.3.1">해야 하는 일의 90% 이상을 경험한 경우</option>
+            <option value="room2" data-condition-code="F.4.S.3.2">해야 하는 일의 70~90%를 경험한 경우</option>
+            <option value="room3" data-condition-code="F.4.S.3.3">해야 하는 일의 30% 이상을 경험하지 못한 경우</option>
           </select>
         </label>
       </div>
@@ -331,9 +331,9 @@
           <span class="label-text">직무능력 평가 빈도</span>
           <select class="room-select" id="frequency-of-job-competency-evaluation-select">
             <option value="" disabled selected hidden>직무능력 평가 빈도를 선택하세요.</option>
-            <option value="room1">직무능력 평가 빈도가 6개월일 경우</option>
-            <option value="room2">직무능력 평가 빈도가 1년일 경우</option>
-            <option value="room3">직무능력 평가 빈도가 3년일 경우</option>
+            <option value="room1" data-condition-code="F.4.S.4.1">직무능력 평가 빈도가 6개월일 경우</option>
+            <option value="room2" data-condition-code="F.4.S.4.2">직무능력 평가 빈도가 1년일 경우</option>
+            <option value="room3" data-condition-code="F.4.S.4.3">직무능력 평가 빈도가 3년일 경우</option>
           </select>
         </label>
       </div>
@@ -343,9 +343,9 @@
           <span class="label-text">시스템 지식의 숙련도</span>
           <select class="room-select" id="system-knowledge-proficiency-select">
             <option value="" disabled selected hidden>시스템 지식(원리적 지식)의 숙련도를 선택하세요.</option>
-            <option value="room1">시스템 지식(원리적 지식)의 숙련도가 높은 경우</option>
-            <option value="room2">시스템 지식(원리적 지식)의 숙련도가 보통인 경우</option>
-            <option value="room3">시스템 지식(원리적 지식)의 숙련도가 낮은 경우</option>
+            <option value="room1" data-condition-code="F.4.S.5.1">시스템 지식(원리적 지식)의 숙련도가 높은 경우</option>
+            <option value="room2" data-condition-code="F.4.S.5.2">시스템 지식(원리적 지식)의 숙련도가 보통인 경우</option>
+            <option value="room3" data-condition-code="F.4.S.5.3">시스템 지식(원리적 지식)의 숙련도가 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -355,9 +355,9 @@
           <span class="label-text">절차적 지식의 숙련도</span>
           <select class="room-select" id="proficiency-in-procedural-knowledge-select">
             <option value="" disabled selected hidden>절차적 지식의 숙련도를 선택하세요.</option>
-            <option value="room1">절차적 지식의 숙련도가 높을 경우</option>
-            <option value="room2">절차적 지식의 숙련도가 보통인 경우</option>
-            <option value="room3">절차적 지식의 숙련도가 낮은 경우</option>
+            <option value="room1" data-condition-code="F.4.S.6.1">절차적 지식의 숙련도가 높을 경우</option>
+            <option value="room2" data-condition-code="F.4.S.6.2">절차적 지식의 숙련도가 보통인 경우</option>
+            <option value="room3" data-condition-code="F.4.S.6.3">절차적 지식의 숙련도가 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -367,9 +367,9 @@
           <span class="label-text">장비 사용 지식의 숙련도</span>
           <select class="room-select" id="proficiency-in-equipment-use-select">
             <option value="" disabled selected hidden>장비 사용 지식의 숙련도를 선택하세요.</option>
-            <option value="room1">장비 사용 지식의 숙련도가 높을 경우</option>
-            <option value="room2">장비 사용 지식의 숙련도가 보통인 경우</option>
-            <option value="room3">장비 사용 지식의 숙련도가 낮은 경우</option>
+            <option value="room1" data-condition-code="F.4.S.7.1">장비 사용 지식의 숙련도가 높을 경우</option>
+            <option value="room2" data-condition-code="F.4.S.7.2">장비 사용 지식의 숙련도가 보통인 경우</option>
+            <option value="room3" data-condition-code="F.4.S.7.3">장비 사용 지식의 숙련도가 낮은 경우</option>
           </select>
         </label>
       </div>
@@ -385,9 +385,9 @@
           <span class="label-text">의사소통 메시지의 길이</span>
           <select class="room-select" id="length-of-communication-message-select">
             <option value="" disabled selected hidden>의사소통 메시지의 길이를 선택하세요.</option>
-            <option value="room1">의사소통 메시지 길이가 짧을(단문) 경우</option>
-            <option value="room2">의사소통 메시지 길이가 보통일(중문) 경우</option>
-            <option value="room3">의사소통 메시지 길이가 길(복문) 경우 경우</option>
+            <option value="room1" data-condition-code="F.5.S.1.1">의사소통 메시지 길이가 짧을(단문) 경우</option>
+            <option value="room2" data-condition-code="F.5.S.1.2">의사소통 메시지 길이가 보통일(중문) 경우</option>
+            <option value="room3" data-condition-code="F.5.S.1.3">의사소통 메시지 길이가 길(복문) 경우 경우</option>
           </select>
         </label>
       </div>
@@ -397,9 +397,9 @@
           <span class="label-text">의사소통을 위한 장비/기기의 적절성</span>
           <select class="room-select" id="adequacy-of-equipment-for-communication-select">
             <option value="" disabled selected hidden>의사소통을 위한 장비/기기의 적절성을 선택하세요.</option>
-            <option value="room1">의사소통을 하기 위한 장비/기기가 적절한 상태일 경우</option>
-            <option value="room2">의사소통을 하기 위한 장비/기기가 보통 수준인 상태일 경우</option>
-            <option value="room3">의사소통을 하기 위한 장비/기기가 부적절한 상태일 경우</option>
+            <option value="room1" data-condition-code="F.5.S.2.1">의사소통을 하기 위한 장비/기기가 적절한 상태일 경우</option>
+            <option value="room2" data-condition-code="F.5.S.2.2">의사소통을 하기 위한 장비/기기가 보통 수준인 상태일 경우</option>
+            <option value="room3" data-condition-code="F.5.S.2.3">의사소통을 하기 위한 장비/기기가 부적절한 상태일 경우</option>
           </select>
         </label>
       </div>
@@ -409,9 +409,9 @@
           <span class="label-text">의사소통을 위한 전문용어 숙지 필요성</span>
           <select class="room-select" id="importance-of-communication-select">
             <option value="" disabled selected hidden>의사소통을 위한 전문용어 숙지 필요성을 선택하세요.</option>
-            <option value="room1">의사소통을 하기 위해 전문용어를 숙지할 필요가 없는 경우</option>
-            <option value="room2">의사소통을 하기 위해 전문용어를 부분적으로 숙지할 필요가 있는 경우</option>
-            <option value="room3">의사소통을 하기 위해 전문용어를 항상 숙지할 필요가 있는 경우</option>
+            <option value="room1" data-condition-code="F.5.S.3.1">의사소통을 하기 위해 전문용어를 숙지할 필요가 없는 경우</option>
+            <option value="room2" data-condition-code="F.5.S.3.2">의사소통을 하기 위해 전문용어를 부분적으로 숙지할 필요가 있는 경우</option>
+            <option value="room3" data-condition-code="F.5.S.3.3">의사소통을 하기 위해 전문용어를 항상 숙지할 필요가 있는 경우</option>
           </select>
         </label>
       </div>
@@ -421,9 +421,9 @@
           <span class="label-text">의사소통 프로토콜의 구체성</span>
           <select class="room-select" id="specificity-of-communication-protocols-select">
             <option value="" disabled selected hidden>의사소통 프로토콜의 구체성을 선택하세요.</option>
-            <option value="room1">의사소통 프로토콜이 매우 구체적일 경우</option>
-            <option value="room2">의사소통 프로토콜이 일부만 구체적일 경우</option>
-            <option value="room3">의사소통 프로토콜이 구체적이지 않을 경우</option>
+            <option value="room1" data-condition-code="F.5.S.4.1">의사소통 프로토콜이 매우 구체적일 경우</option>
+            <option value="room2" data-condition-code="F.5.S.4.2">의사소통 프로토콜이 일부만 구체적일 경우</option>
+            <option value="room3" data-condition-code="F.5.S.4.3">의사소통 프로토콜이 구체적이지 않을 경우</option>
           </select>
         </label>
       </div>
@@ -433,9 +433,9 @@
           <span class="label-text">의사소통자 간 상황인식 공유 정도</span>
           <select class="room-select" id="shared-understanding-select">
             <option value="" disabled selected hidden>의사소통자 간 상황인식 공유 정도를 선택하세요.</option>
-            <option value="room1">의사소통자 간의 상황인식 공유가 잘 되어 있을 경우</option>
-            <option value="room2">의사소통자 간의 상황인식 공유가 부분적으로 되어 있을 경우</option>
-            <option value="room3">의사소통자 간의 상황인식 공유가 되지 않을 경우</option>
+            <option value="room1" data-condition-code="F.5.S.5.1">의사소통자 간의 상황인식 공유가 잘 되어 있을 경우</option>
+            <option value="room2" data-condition-code="F.5.S.5.2">의사소통자 간의 상황인식 공유가 부분적으로 되어 있을 경우</option>
+            <option value="room3" data-condition-code="F.5.S.5.3">의사소통자 간의 상황인식 공유가 되지 않을 경우</option>
           </select>
         </label>
       </div>
@@ -445,9 +445,9 @@
           <span class="label-text">팀/조직 의사소통 자율성</span>
           <select class="room-select" id="organization-communication-autonomy-select">
             <option value="" disabled selected hidden>팀/조직 의사소통 자율성을 선택하세요.</option>
-            <option value="room1">팀/조직 의사소통 자율성이 높을 경우</option>
-            <option value="room2">팀/조직 의사소통 자율성이 보통일 경우</option>
-            <option value="room3">팀/조직 의사소통 자율성이 낮을 경우</option>
+            <option value="room1" data-condition-code="F.5.S.6.1">팀/조직 의사소통 자율성이 높을 경우</option>
+            <option value="room2" data-condition-code="F.5.S.6.2">팀/조직 의사소통 자율성이 보통일 경우</option>
+            <option value="room3" data-condition-code="F.5.S.6.3">팀/조직 의사소통 자율성이 낮을 경우</option>
           </select>
         </label>
       </div>
@@ -463,8 +463,8 @@
           <span class="label-text">풍속</span>
           <select class="room-select" id="work-performance-environment-select">
             <option value="" disabled selected hidden>풍속을 선택하세요.</option>
-            <option value="room1">풍속이 10m/s 미만인 경우</option>
-            <option value="room2">풍속 10m/s 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.1.1">풍속이 10m/s 미만인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.1.2">풍속 10m/s 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -474,8 +474,8 @@
           <span class="label-text">비</span>
           <select class="room-select" id="rain-select">
             <option value="" disabled selected hidden>비를 선택하세요.</option>
-            <option value="room1">비가 10mm/h(눈의 경우 1cm/h) 미만</option>
-            <option value="room2">비가 10mm/s(눈의 경우 1cm/s) 이상</option>
+            <option value="room1" data-condition-code="F.6.S.2.1">비가 10mm/h(눈의 경우 1cm/h) 미만</option>
+            <option value="room2" data-condition-code="F.6.S.2.2">비가 10mm/s(눈의 경우 1cm/s) 이상</option>
           </select>
         </label>
       </div>
@@ -485,8 +485,8 @@
           <span class="label-text">실외 습도</span>
           <select class="room-select" id="outdoor-humidity-select">
             <option value="" disabled selected hidden>실외 습도를 선택하세요.</option>
-            <option value="room1">실외 습도가 90% 이하인 경우</option>
-            <option value="room2">실외 습도가 90% 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.3.1">실외 습도가 90% 이하인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.3.2">실외 습도가 90% 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -496,8 +496,8 @@
           <span class="label-text">실외 온도</span>
           <select class="room-select" id="outdoor-temperature-select">
             <option value="" disabled selected hidden>실외 온도를 선택하세요.</option>
-            <option value="room1">실외 온도가 35℃(체감 온도) 이하인 경우</option>
-            <option value="room2">실외 온도가 35℃(체감 온도) 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.4.1">실외 온도가 35℃(체감 온도) 이하인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.4.2">실외 온도가 35℃(체감 온도) 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -507,8 +507,8 @@
           <span class="label-text">낙뢰</span>
           <select class="room-select" id="thunderstroke-select">
             <option value="" disabled selected hidden>낙뢰를 선택하세요.</option>
-            <option value="room1">낙뢰가 발생하지 않을 경우</option>
-            <option value="room2">낙뢰가 발생할 경우</option>
+            <option value="room1" data-condition-code="F.6.S.5.1">낙뢰가 발생하지 않을 경우</option>
+            <option value="room2" data-condition-code="F.6.S.5.2">낙뢰가 발생할 경우</option>
           </select>
         </label>
       </div>
@@ -518,8 +518,8 @@
           <span class="label-text">안개</span>
           <select class="room-select" id="fog-select">
             <option value="" disabled selected hidden>안개를 선택하세요.</option>
-            <option value="room1">안개가 발생하지 않을 경우</option>
-            <option value="room2">안개가 발생할 경우</option>
+            <option value="room1" data-condition-code="F.6.S.6.1">안개가 발생하지 않을 경우</option>
+            <option value="room2" data-condition-code="F.6.S.6.2">안개가 발생할 경우</option>
           </select>
         </label>
       </div>
@@ -529,8 +529,8 @@
           <span class="label-text">황사</span>
           <select class="room-select" id="yellow-dust-select">
             <option value="" disabled selected hidden>황사를 선택하세요.</option>
-            <option value="room1">황사로 인해 작업자가 숨 쉬기가 불편할 경우</option>
-            <option value="room2">황사로 인해 작업자가 확실히 사물을 볼 수 없는 경우</option>
+            <option value="room1" data-condition-code="F.6.S.7.2">황사로 인해 작업자가 숨 쉬기가 불편할 경우</option>
+            <option value="room2" data-condition-code="F.6.S.7.1">황사로 인해 작업자가 확실히 사물을 볼 수 없는 경우</option>
           </select>
         </label>
       </div>
@@ -540,8 +540,8 @@
           <span class="label-text">작업공간 크기</span>
           <select class="room-select" id="workspace-size-select">
             <option value="" disabled selected hidden>작업공간 크기를 선택하세요.</option>
-            <option value="room1">작업공간의 크기가 10m³ 이상인 경우</option>
-            <option value="room2">작업공간의 크기가 10m³ 이하인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.8.1">작업공간의 크기가 10m³ 이상인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.8.2">작업공간의 크기가 10m³ 이하인 경우</option>
           </select>
         </label>
       </div>
@@ -551,8 +551,8 @@
           <span class="label-text">마찰계수</span>
           <select class="room-select" id="coefficient-of-friction-select">
             <option value="" disabled selected hidden>마찰계수를 선택하세요.</option>
-            <option value="room1">바닥 (정지)마찰계수(SCOF)가 ≥ 0.63인 경우</option>
-            <option value="room2">바닥 (정지)마찰계수(SCOF)가 < 0.63인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.9.2">바닥 (정지)마찰계수(SCOF)가 ≥ 0.63인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.9.1">바닥 (정지)마찰계수(SCOF)가 < 0.63인 경우</option>
           </select>
         </label>
       </div>
@@ -562,9 +562,9 @@
           <span class="label-text">실내 온도</span>
           <select class="room-select" id="indoor-temperature-select">
             <option value="" disabled selected hidden>실내 온도를 선택하세요.</option>
-            <option value="room1">실내 온도가 17℃ 이하인 경우</option>
-            <option value="room2">실내 온도가 17~28℃인 경우</option>
-            <option value="room3">실내 온도가 28℃ 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.10.1">실내 온도가 17℃ 이하인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.10.2">실내 온도가 17~28℃인 경우</option>
+            <option value="room3" data-condition-code="F.6.S.10.3">실내 온도가 28℃ 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -574,9 +574,9 @@
           <span class="label-text">실내 습도</span>
           <select class="room-select" id="indoor-humidity-select">
             <option value="" disabled selected hidden>실내 습도를 선택하세요.</option>
-            <option value="room1">실내 습도가 40% 이하인 경우</option>
-            <option value="room2">실내 습도가 40~75%인 경우</option>
-            <option value="room3">실내 습도가 75% 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.11.1">실내 습도가 40% 이하인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.11.2">실내 습도가 40~75%인 경우</option>
+            <option value="room3" data-condition-code="F.6.S.11.3">실내 습도가 75% 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -586,8 +586,8 @@
           <span class="label-text">통풍</span>
           <select class="room-select" id="gout-select">
             <option value="" disabled selected hidden>통풍을 선택하세요.</option>
-            <option value="room1">통풍이 잘 될 경우</option>
-            <option value="room2">통풍이 잘 되지 않을 경우</option>
+            <option value="room1" data-condition-code="F.6.S.12.1">통풍이 잘 될 경우</option>
+            <option value="room2" data-condition-code="F.6.S.12.2">통풍이 잘 되지 않을 경우</option>
           </select>
         </label>
       </div>
@@ -597,9 +597,9 @@
           <span class="label-text">소음</span>
           <select class="room-select" id="noise-select">
             <option value="" disabled selected hidden>소음을 선택하세요.</option>
-            <option value="room1">소음이 85dB 이하인 경우</option>
-            <option value="room2">소음이 85~115dB인 경우</option>
-            <option value="room3">소음이 115dB 이상인 경우</option>
+            <option value="room1" data-condition-code="F.6.S.13.1">소음이 85dB 이하인 경우</option>
+            <option value="room2" data-condition-code="F.6.S.13.2">소음이 85~115dB인 경우</option>
+            <option value="room3" data-condition-code="F.6.S.13.3">소음이 115dB 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -609,9 +609,9 @@
           <span class="label-text">업무공간 가시성</span>
           <select class="room-select" id="workspace-visibility-select">
             <option value="" disabled selected hidden>업무공간 가시성을 선택하세요.</option>
-            <option value="room1">보통작업을 수행할 정도의 조도가 형성된 경우</option>
-            <option value="room2">정밀작업을 수행할 정도의 조도가 형성된 경우</option>
-            <option value="room3">초정밀작업을 수행할 정도의 조도가 형성된 경우</option>
+            <option value="room1" data-condition-code="F.6.S.14.1">보통작업을 수행할 정도의 조도가 형성된 경우</option>
+            <option value="room2" data-condition-code="F.6.S.14.2">정밀작업을 수행할 정도의 조도가 형성된 경우</option>
+            <option value="room3" data-condition-code="F.6.S.14.3">초정밀작업을 수행할 정도의 조도가 형성된 경우</option>
           </select>
         </label>
       </div>
@@ -627,9 +627,9 @@
           <span class="label-text">작업 관리 및 감독 적절성</span>
           <select class="room-select" id="task-management-select">
             <option value="" disabled selected hidden>작업 관리 및 감독 적절성을 선택하세요.</option>
-            <option value="room1">작업 관리 및 감독이 적절하게 이루어진 경우</option>
-            <option value="room2">작업 관리 및 감독이 불완전하게 이루어진 경우</option>
-            <option value="room3">작업 관리 및 감독이 부적절하게 이루어진 경우</option>
+            <option value="room1" data-condition-code="F.7.S.1.1">작업 관리 및 감독이 적절하게 이루어진 경우</option>
+            <option value="room2" data-condition-code="F.7.S.1.2">작업 관리 및 감독이 불완전하게 이루어진 경우</option>
+            <option value="room3" data-condition-code="F.7.S.1.3">작업 관리 및 감독이 부적절하게 이루어진 경우</option>
           </select>
         </label>
       </div>
@@ -639,9 +639,9 @@
           <span class="label-text">작업 계획 적절성</span>
           <select class="room-select" id="work-plan-select">
             <option value="" disabled selected hidden>작업 계획 적절성을 선택하세요.</option>
-            <option value="room1">작업 계획이 적절하게 이루어진 경우</option>
-            <option value="room2">작업 계획이 불완전하게 이루어진 경우</option>
-            <option value="room3">작업 계획이 부적절하게 이루어진 경우</option>
+            <option value="room1" data-condition-code="F.7.S.2.1">작업 계획이 적절하게 이루어진 경우</option>
+            <option value="room2" data-condition-code="F.7.S.2.2">작업 계획이 불완전하게 이루어진 경우</option>
+            <option value="room3" data-condition-code="F.7.S.2.3">작업 계획이 부적절하게 이루어진 경우</option>
           </select>
         </label>
       </div>
@@ -651,9 +651,9 @@
           <span class="label-text">작업절차 및 규정</span>
           <select class="room-select" id="work-procedure-select">
             <option value="" disabled selected hidden>작업절차 및 규정을 선택하세요.</option>
-            <option value="room1">작업절차 및 규정이 좋은 경우</option>
-            <option value="room2">작업절차 및 규정이 보통인 경우</option>
-            <option value="room3">작업절차 및 규정이 좋지 않은 경우</option>
+            <option value="room1" data-condition-code="F.7.S.3.1">작업절차 및 규정이 좋은 경우</option>
+            <option value="room2" data-condition-code="F.7.S.3.2">작업절차 및 규정이 보통인 경우</option>
+            <option value="room3" data-condition-code="F.7.S.3.3">작업절차 및 규정이 좋지 않은 경우</option>
           </select>
         </label>
       </div>
@@ -663,9 +663,9 @@
           <span class="label-text">역할 분담 명료화</span>
           <select class="room-select" id="division-of-roles-select">
             <option value="" disabled selected hidden>역할 분담 명료화를 선택하세요.</option>
-            <option value="room1">역할 분담이 명확한 경우</option>
-            <option value="room2">역할 분담이 모호한 경우</option>
-            <option value="room3">역할 분담이 명확하지 않은 경우</option>
+            <option value="room1" data-condition-code="F.7.S.4.1">역할 분담이 명확한 경우</option>
+            <option value="room2" data-condition-code="F.7.S.4.2">역할 분담이 모호한 경우</option>
+            <option value="room3" data-condition-code="F.7.S.4.3">역할 분담이 명확하지 않은 경우</option>
           </select>
         </label>
       </div>
@@ -675,9 +675,9 @@
           <span class="label-text">작업자간 협업 정도</span>
           <select class="room-select" id="degree-of-worker-collaboration-select">
             <option value="" disabled selected hidden>작업자간 협업 정도를 선택하세요.</option>
-            <option value="room1">작업자간 협업이 원활한 경우</option>
-            <option value="room2">작업자간 협업이 제한적인 경우</option>
-            <option value="room3">작업자간 협업이 원활하지 않은 경우</option>
+            <option value="room1" data-condition-code="F.7.S.5.1">작업자간 협업이 원활한 경우</option>
+            <option value="room2" data-condition-code="F.7.S.5.2">작업자간 협업이 제한적인 경우</option>
+            <option value="room3" data-condition-code="F.7.S.5.3">작업자간 협업이 원활하지 않은 경우</option>
           </select>
         </label>
       </div>
@@ -693,8 +693,8 @@
           <span class="label-text">의사결정 목표의 명확성</span>
           <select class="room-select" id="clarity-of-decision-making-goals-select">
             <option value="" disabled selected hidden>의사결정 목표의 명확성을 선택하세요.</option>
-            <option value="room1">의사결정이 필요한 상황에서 의사결정 목표가 명확할 경우</option>
-            <option value="room2">의사결정이 필요한 상황에서 의사결정 목표가 명확하지 않을 경우</option>
+            <option value="room1" data-condition-code="F.8.S.1.1">의사결정이 필요한 상황에서 의사결정 목표가 명확할 경우</option>
+            <option value="room2" data-condition-code="F.8.S.1.2">의사결정이 필요한 상황에서 의사결정 목표가 명확하지 않을 경우</option>
           </select>
         </label>
       </div>
@@ -704,9 +704,9 @@
           <span class="label-text">의사결정 대안의 수</span>
           <select class="room-select" id="numbers-of-alternatives-select">
             <option value="" disabled selected hidden>의사결정 대안의 수를 선택하세요.</option>
-            <option value="room1">의사결정 과정에서 선택할 수 있는 대안의 수가 2건 이하인 경우</option>
-            <option value="room2">의사결정 과정에서 선택할 수 있는 대안의 수가 3~4건인 경우</option>
-            <option value="room3">의사결정 과정에서 선택할 수 있는 대안의 수가 5건 이상인 경우</option>
+            <option value="room1" data-condition-code="F.8.S.2.1">의사결정 과정에서 선택할 수 있는 대안의 수가 2건 이하인 경우</option>
+            <option value="room2" data-condition-code="F.8.S.2.2">의사결정 과정에서 선택할 수 있는 대안의 수가 3~4건인 경우</option>
+            <option value="room3" data-condition-code="F.8.S.2.3">의사결정 과정에서 선택할 수 있는 대안의 수가 5건 이상인 경우</option>
           </select>
         </label>
       </div>
@@ -716,9 +716,9 @@
           <span class="label-text">의사결정 판단 기준의 수</span>
           <select class="room-select" id="number-of-decision-making-criteria-select">
             <option value="" disabled selected hidden>의사결정 판단 기준의 수를 선택하세요.</option>
-            <option value="room1">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 1개일 경우</option>
-            <option value="room2">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 2~3개일 경우</option>
-            <option value="room3">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 4개 이상일 경우</option>
+            <option value="room1" data-condition-code="F.8.S.3.1">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 1개일 경우</option>
+            <option value="room2" data-condition-code="F.8.S.3.2">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 2~3개일 경우</option>
+            <option value="room3" data-condition-code="F.8.S.3.3">올바른 의사결정을 위해 고려해야 하는 판단기준(예: 시간, 비용, 인력 등)의 수가 4개 이상일 경우</option>
           </select>
         </label>
       </div>
@@ -728,9 +728,9 @@
           <span class="label-text">(동시에 처리 되어야 하는)의사결정 수</span>
           <select class="room-select" id="decision-tree-select">
             <option value="" disabled selected hidden>의사결정 수를 선택하세요.</option>
-            <option value="room1">동시에 처리되어야 하는 의사결정의 수가 1개일 경우</option>
-            <option value="room2">동시에 처리되어야 하는 의사결정의 수가 2개일 경우</option>
-            <option value="room3">동시에 처리되어야 하는 의사결정의 수가 3개 이상일 경우</option>
+            <option value="room1" data-condition-code="F.8.S.4.1">동시에 처리되어야 하는 의사결정의 수가 1개일 경우</option>
+            <option value="room2" data-condition-code="F.8.S.4.2">동시에 처리되어야 하는 의사결정의 수가 2개일 경우</option>
+            <option value="room3" data-condition-code="F.8.S.4.3">동시에 처리되어야 하는 의사결정의 수가 3개 이상일 경우</option>
           </select>
         </label>
       </div>
@@ -740,9 +740,9 @@
           <span class="label-text">관측되는 정보의 양</span>
           <select class="room-select" id="amount-of-observed-information-select">
             <option value="" disabled selected hidden>관측되는 정보의 양을 선택하세요.</option>
-            <option value="room1">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 3개 이하일 경우</option>
-            <option value="room2">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 4~6개일 경우</option>
-            <option value="room3">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 7개 이상일 경우</option>
+            <option value="room1" data-condition-code="F.8.S.5.1">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 3개 이하일 경우</option>
+            <option value="room2" data-condition-code="F.8.S.5.2">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 4~6개일 경우</option>
+            <option value="room3" data-condition-code="F.8.S.5.3">업무수행 및 의사결정을 위해 관측 되어야 하는 정보의 양이 7개 이상일 경우</option>
           </select>
         </label>
       </div>
@@ -752,9 +752,9 @@
           <span class="label-text">(관측이 불가능하여)추론해야하는 정보의 양</span>
           <select class="room-select" id="amount-of-information-to-be-deduced-select">
             <option value="" disabled selected hidden>정보의 양을 선택하세요.</option>
-            <option value="room1">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 1개인 경우</option>
-            <option value="room2">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 2~4개인 경우</option>
-            <option value="room3">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 5개 이상인 경우
+            <option value="room1" data-condition-code="F.8.S.6.1">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 1개인 경우</option>
+            <option value="room2" data-condition-code="F.8.S.6.2">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 2~4개인 경우</option>
+            <option value="room3" data-condition-code="F.8.S.6.3">업무수행 및 의사결정을 위해 파악하고 있어야 하나 직접적으로 관측되지 않아 관측된 정보를 이용해 추론해야 하는 정보의 양이 5개 이상인 경우
             </option>
           </select>
         </label>
@@ -765,8 +765,8 @@
           <span class="label-text">정보의 불확실성</span>
           <select class="room-select" id="uncertainty-of-information-select">
             <option value="" disabled selected hidden>정보의 불확실성을 선택하세요.</option>
-            <option value="room1">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높지 않은 경우</option>
-            <option value="room2">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높은 경우</option>
+            <option value="room1" data-condition-code="F.8.S.7.1">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높지 않은 경우</option>
+            <option value="room2" data-condition-code="F.8.S.7.2">업무수행 및 의사결정을 위해 필요한 정보의 불확실성이 높은 경우</option>
           </select>
         </label>
       </div>
@@ -802,6 +802,7 @@
     </div>
   </div>
 
+  <script src="/static/input-encoding.js"></script>
   <script>
     // 진행률 업데이트
     const allSelects = document.querySelectorAll('.room-select');
@@ -897,137 +898,121 @@
       }
       const houses = document.querySelectorAll('.house');
 
-      const optionCodeNumbersByField = {};
-
-      const getValue = (select, fieldKey) => {
-        const selectedText = select?.selectedOptions[0]?.text.trim() || '';
-        const actualOptions = Array.from(select?.options || []).filter(
-          (option) => !option.disabled && option.value !== ''
-        );
-        const selectedIndex = actualOptions.findIndex(
-          (option) => option.text.trim() === selectedText
-        );
-
-        if (selectedIndex === -1) {
-          return undefined;
-        }
-
-        const codeNumbers = optionCodeNumbersByField[fieldKey]
-          || actualOptions.map((_, index) => index + 1);
-        const codeNumber = codeNumbers[selectedIndex];
-
-        return typeof codeNumber === 'number'
-          ? `${fieldKey}.${codeNumber}`
-          : undefined;
-      };
-
+      // Stable option codes are attached to the options, independent of display order.
+      const getValue = PsfInputEncoding.getConditionCode;
       const data = {};
 
-      // PSF1
-      const psf1House = houses[0];
-      const psf1Selects = psf1House.querySelectorAll('.room-select');
-      data["F.1"] = {
-        'F.1.S.1': getValue(psf1Selects[0], 'F.1.S.1'),
-        'F.1.S.2': getValue(psf1Selects[1], 'F.1.S.2'),
-        'F.1.S.3': getValue(psf1Selects[2], 'F.1.S.3'),
-        'F.1.S.4': getValue(psf1Selects[3], 'F.1.S.4'),
-        'F.1.S.5': getValue(psf1Selects[4], 'F.1.S.5')
-      };
+      try {
+        // PSF1
+        const psf1House = houses[0];
+        const psf1Selects = psf1House.querySelectorAll('.room-select');
+        data["F.1"] = {
+          'F.1.S.1': getValue(psf1Selects[0], 'F.1.S.1'),
+          'F.1.S.2': getValue(psf1Selects[1], 'F.1.S.2'),
+          'F.1.S.3': getValue(psf1Selects[2], 'F.1.S.3'),
+          'F.1.S.4': getValue(psf1Selects[3], 'F.1.S.4'),
+          'F.1.S.5': getValue(psf1Selects[4], 'F.1.S.5')
+        };
 
-      // PSF2
-      const psf2House = houses[1];
-      const psf2Selects = psf2House.querySelectorAll('.room-select');
-      data["F.2"] = {
-        'F.2.S.1': getValue(psf2Selects[0], 'F.2.S.1'),
-        'F.2.S.2': getValue(psf2Selects[1], 'F.2.S.2'),
-        'F.2.S.3': getValue(psf2Selects[2], 'F.2.S.3'),
-        'F.2.S.4': getValue(psf2Selects[3], 'F.2.S.4'),
-        'F.2.S.5': getValue(psf2Selects[4], 'F.2.S.5'),
-        'F.2.S.6': getValue(psf2Selects[5], 'F.2.S.6'),
-        'F.2.S.7': getValue(psf2Selects[6], 'F.2.S.7')
-      };
+        // PSF2
+        const psf2House = houses[1];
+        const psf2Selects = psf2House.querySelectorAll('.room-select');
+        data["F.2"] = {
+          'F.2.S.1': getValue(psf2Selects[0], 'F.2.S.1'),
+          'F.2.S.2': getValue(psf2Selects[1], 'F.2.S.2'),
+          'F.2.S.3': getValue(psf2Selects[2], 'F.2.S.3'),
+          'F.2.S.4': getValue(psf2Selects[3], 'F.2.S.4'),
+          'F.2.S.5': getValue(psf2Selects[4], 'F.2.S.5'),
+          'F.2.S.6': getValue(psf2Selects[5], 'F.2.S.6'),
+          'F.2.S.7': getValue(psf2Selects[6], 'F.2.S.7')
+        };
 
-      // PSF3
-      const psf3House = houses[2];
-      const psf3Selects = psf3House.querySelectorAll('.room-select');
-      data["F.3"] = {
-        'F.3.S.1': getValue(psf3Selects[0], 'F.3.S.1'),
-        'F.3.S.2': getValue(psf3Selects[1], 'F.3.S.2'),
-        'F.3.S.3': getValue(psf3Selects[2], 'F.3.S.3'),
-        'F.3.S.4': getValue(psf3Selects[3], 'F.3.S.4'),
-        'F.3.S.5': getValue(psf3Selects[4], 'F.3.S.5'),
-        'F.3.S.6': getValue(psf3Selects[5], 'F.3.S.6')
-      };
+        // PSF3
+        const psf3House = houses[2];
+        const psf3Selects = psf3House.querySelectorAll('.room-select');
+        data["F.3"] = {
+          'F.3.S.1': getValue(psf3Selects[0], 'F.3.S.1'),
+          'F.3.S.2': getValue(psf3Selects[1], 'F.3.S.2'),
+          'F.3.S.3': getValue(psf3Selects[2], 'F.3.S.3'),
+          'F.3.S.4': getValue(psf3Selects[3], 'F.3.S.4'),
+          'F.3.S.5': getValue(psf3Selects[4], 'F.3.S.5'),
+          'F.3.S.6': getValue(psf3Selects[5], 'F.3.S.6')
+        };
 
-      // PSF4
-      const psf4House = houses[3];
-      const psf4Selects = psf4House.querySelectorAll('.room-select');
-      data["F.4"] = {
-        training_elapsed_months: trainingMonths,
-        'F.4.S.1': getValue(psf4Selects[0], 'F.4.S.1'),
-        'F.4.S.2': getValue(psf4Selects[1], 'F.4.S.2'),
-        'F.4.S.3': getValue(psf4Selects[2], 'F.4.S.3'),
-        'F.4.S.4': getValue(psf4Selects[3], 'F.4.S.4'),
-        'F.4.S.5': getValue(psf4Selects[4], 'F.4.S.5'),
-        'F.4.S.6': getValue(psf4Selects[5], 'F.4.S.6'),
-        'F.4.S.7': getValue(psf4Selects[6], 'F.4.S.7')
-      };
+        // PSF4
+        const psf4House = houses[3];
+        const psf4Selects = psf4House.querySelectorAll('.room-select');
+        data["F.4"] = {
+          training_elapsed_months: trainingMonths,
+          'F.4.S.1': getValue(psf4Selects[0], 'F.4.S.1'),
+          'F.4.S.2': getValue(psf4Selects[1], 'F.4.S.2'),
+          'F.4.S.3': getValue(psf4Selects[2], 'F.4.S.3'),
+          'F.4.S.4': getValue(psf4Selects[3], 'F.4.S.4'),
+          'F.4.S.5': getValue(psf4Selects[4], 'F.4.S.5'),
+          'F.4.S.6': getValue(psf4Selects[5], 'F.4.S.6'),
+          'F.4.S.7': getValue(psf4Selects[6], 'F.4.S.7')
+        };
 
-      // PSF5
-      const psf5House = houses[4];
-      const psf5Selects = psf5House.querySelectorAll('.room-select');
-      data["F.5"] = {
-        'F.5.S.1': getValue(psf5Selects[0], 'F.5.S.1'),
-        'F.5.S.2': getValue(psf5Selects[1], 'F.5.S.2'),
-        'F.5.S.3': getValue(psf5Selects[2], 'F.5.S.3'),
-        'F.5.S.4': getValue(psf5Selects[3], 'F.5.S.4'),
-        'F.5.S.5': getValue(psf5Selects[4], 'F.5.S.5'),
-        'F.5.S.6': getValue(psf5Selects[5], 'F.5.S.6')
-      };
+        // PSF5
+        const psf5House = houses[4];
+        const psf5Selects = psf5House.querySelectorAll('.room-select');
+        data["F.5"] = {
+          'F.5.S.1': getValue(psf5Selects[0], 'F.5.S.1'),
+          'F.5.S.2': getValue(psf5Selects[1], 'F.5.S.2'),
+          'F.5.S.3': getValue(psf5Selects[2], 'F.5.S.3'),
+          'F.5.S.4': getValue(psf5Selects[3], 'F.5.S.4'),
+          'F.5.S.5': getValue(psf5Selects[4], 'F.5.S.5'),
+          'F.5.S.6': getValue(psf5Selects[5], 'F.5.S.6')
+        };
 
-      // PSF6
-      const psf6House = houses[5];
-      const psf6Selects = psf6House.querySelectorAll('.room-select');
-      data["F.6"] = {
-        'F.6.S.1': getValue(psf6Selects[0], 'F.6.S.1'),
-        'F.6.S.2': getValue(psf6Selects[1], 'F.6.S.2'),
-        'F.6.S.3': getValue(psf6Selects[2], 'F.6.S.3'),
-        'F.6.S.4': getValue(psf6Selects[3], 'F.6.S.4'),
-        'F.6.S.5': getValue(psf6Selects[4], 'F.6.S.5'),
-        'F.6.S.6': getValue(psf6Selects[5], 'F.6.S.6'),
-        'F.6.S.7': getValue(psf6Selects[6], 'F.6.S.7'),
-        'F.6.S.8': getValue(psf6Selects[7], 'F.6.S.8'),
-        'F.6.S.9': getValue(psf6Selects[8], 'F.6.S.9'),
-        'F.6.S.10': getValue(psf6Selects[9], 'F.6.S.10'),
-        'F.6.S.11': getValue(psf6Selects[10], 'F.6.S.11'),
-        'F.6.S.12': getValue(psf6Selects[11], 'F.6.S.12'),
-        'F.6.S.13': getValue(psf6Selects[12], 'F.6.S.13'),
-        'F.6.S.14': getValue(psf6Selects[13], 'F.6.S.14')
-      };
+        // PSF6
+        const psf6House = houses[5];
+        const psf6Selects = psf6House.querySelectorAll('.room-select');
+        data["F.6"] = {
+          'F.6.S.1': getValue(psf6Selects[0], 'F.6.S.1'),
+          'F.6.S.2': getValue(psf6Selects[1], 'F.6.S.2'),
+          'F.6.S.3': getValue(psf6Selects[2], 'F.6.S.3'),
+          'F.6.S.4': getValue(psf6Selects[3], 'F.6.S.4'),
+          'F.6.S.5': getValue(psf6Selects[4], 'F.6.S.5'),
+          'F.6.S.6': getValue(psf6Selects[5], 'F.6.S.6'),
+          'F.6.S.7': getValue(psf6Selects[6], 'F.6.S.7'),
+          'F.6.S.8': getValue(psf6Selects[7], 'F.6.S.8'),
+          'F.6.S.9': getValue(psf6Selects[8], 'F.6.S.9'),
+          'F.6.S.10': getValue(psf6Selects[9], 'F.6.S.10'),
+          'F.6.S.11': getValue(psf6Selects[10], 'F.6.S.11'),
+          'F.6.S.12': getValue(psf6Selects[11], 'F.6.S.12'),
+          'F.6.S.13': getValue(psf6Selects[12], 'F.6.S.13'),
+          'F.6.S.14': getValue(psf6Selects[13], 'F.6.S.14')
+        };
 
-      // PSF7
-      const psf7House = houses[6];
-      const psf7Selects = psf7House.querySelectorAll('.room-select');
-      data["F.7"] = {
-        'F.7.S.1': getValue(psf7Selects[0], 'F.7.S.1'),
-        'F.7.S.2': getValue(psf7Selects[1], 'F.7.S.2'),
-        'F.7.S.3': getValue(psf7Selects[2], 'F.7.S.3'),
-        'F.7.S.4': getValue(psf7Selects[3], 'F.7.S.4'),
-        'F.7.S.5': getValue(psf7Selects[4], 'F.7.S.5')
-      };
+        // PSF7
+        const psf7House = houses[6];
+        const psf7Selects = psf7House.querySelectorAll('.room-select');
+        data["F.7"] = {
+          'F.7.S.1': getValue(psf7Selects[0], 'F.7.S.1'),
+          'F.7.S.2': getValue(psf7Selects[1], 'F.7.S.2'),
+          'F.7.S.3': getValue(psf7Selects[2], 'F.7.S.3'),
+          'F.7.S.4': getValue(psf7Selects[3], 'F.7.S.4'),
+          'F.7.S.5': getValue(psf7Selects[4], 'F.7.S.5')
+        };
 
-      // PSF8
-      const psf8House = houses[7];
-      const psf8Selects = psf8House.querySelectorAll('.room-select');
-      data["F.8"] = {
-        'F.8.S.1': getValue(psf8Selects[0], 'F.8.S.1'),
-        'F.8.S.2': getValue(psf8Selects[1], 'F.8.S.2'),
-        'F.8.S.3': getValue(psf8Selects[2], 'F.8.S.3'),
-        'F.8.S.4': getValue(psf8Selects[3], 'F.8.S.4'),
-        'F.8.S.5': getValue(psf8Selects[4], 'F.8.S.5'),
-        'F.8.S.6': getValue(psf8Selects[5], 'F.8.S.6'),
-        'F.8.S.7': getValue(psf8Selects[6], 'F.8.S.7')
-      };
+        // PSF8
+        const psf8House = houses[7];
+        const psf8Selects = psf8House.querySelectorAll('.room-select');
+        data["F.8"] = {
+          'F.8.S.1': getValue(psf8Selects[0], 'F.8.S.1'),
+          'F.8.S.2': getValue(psf8Selects[1], 'F.8.S.2'),
+          'F.8.S.3': getValue(psf8Selects[2], 'F.8.S.3'),
+          'F.8.S.4': getValue(psf8Selects[3], 'F.8.S.4'),
+          'F.8.S.5': getValue(psf8Selects[4], 'F.8.S.5'),
+          'F.8.S.6': getValue(psf8Selects[5], 'F.8.S.6'),
+          'F.8.S.7': getValue(psf8Selects[6], 'F.8.S.7')
+        };
+
+      } catch (error) {
+        showModal(error.message);
+        return;
+      }
 
       console.log('전송할 데이터:', data);
 
