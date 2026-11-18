@@ -37,7 +37,13 @@ def normalize_environment_condition(value, condition_key):
         except ValueError as exc:
             raise ValueError(f"{field}에 해당하는 선택 코드 또는 원래 응답 문구가 필요합니다.") from exc
 
-    if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value):
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError(f"{field}의 환경 입력값이 올바르지 않습니다.")
+    try:
+        value = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{field}의 환경 입력값이 허용 범위를 벗어났습니다.") from exc
+    if not math.isfinite(value):
         raise ValueError(f"{field}의 환경 입력값이 올바르지 않습니다.")
     matches = [
         category for category, encoded in zip(categories, CATBOOST_OPTION_VALUES[field])
@@ -53,8 +59,8 @@ def normalize_environment_condition(value, condition_key):
     return matches[0]
 
 
-def build_environment_features(conditions):
-    """Validate all 14 fields and return raw strings in saved model order."""
+def normalize_environment_conditions(conditions):
+    """Validate all 14 fields and resolve aliases to original categories."""
     if not isinstance(conditions, dict):
         raise ValueError("F.6 입력은 JSON 객체여야 합니다.")
     resolved = {}
@@ -69,4 +75,10 @@ def build_environment_features(conditions):
     missing = [field for field in ENVIRONMENT_FIELDS if field not in resolved]
     if missing:
         raise ValueError("F.6에는 14개 문항이 모두 필요합니다. 누락: " + ", ".join(missing))
+    return resolved
+
+
+def build_environment_features(conditions):
+    """Validate all 14 fields and return raw strings in saved model order."""
+    resolved = normalize_environment_conditions(conditions)
     return [resolved[keys[0]] for _, keys in ENVIRONMENT_FEATURES]

@@ -1,4 +1,4 @@
-"""PSF output labels, display names, and supported request field aliases."""
+"""PSF output labels and display names."""
 
 
 PSF_LABELS = {
@@ -22,36 +22,3 @@ PSF_NAMES = {
     7: '작업절차',
     8: '복잡성',
 }
-
-
-def get_legacy_condition_key(condition_key):
-    """
-    F.1.S.1 -> F.1.1
-    """
-    return condition_key.replace(
-        ".S.",
-        ".",
-        1,
-    )
-
-
-def get_condition_value(
-    conditions,
-    condition_key,
-    default=1,
-):
-    """
-    신규 키와 기존 키를 모두 지원한다.
-    """
-
-    if condition_key in conditions:
-        return conditions[condition_key]
-
-    legacy_key = get_legacy_condition_key(
-        condition_key
-    )
-
-    return conditions.get(
-        legacy_key,
-        default,
-    )

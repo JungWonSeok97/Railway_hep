@@ -253,9 +253,15 @@ PSF2·4·8의 CatBoost 경로는 기존 숫자 인코딩과 저장된 GMM을 유
 
 예를 들어 `"F.6.S.10": "F.6.S.10.3"`은 실내 온도 28℃ 이상 범주를 정확히 전달합니다. 기존 `F.6.10` 문항 키와 `F.6.10.3` 선택 코드도 지원합니다. PSF6의 원문에서 강수량 단위가 `mm/s`로 기재된 범주는 학습 토큰의 일치를 위해 그대로 유지합니다. 이는 단위의 물리적 타당성을 검증했다는 뜻이 아닙니다.
 
-`config/mappings.py`는 PSF 이름·출력 등급과 입력 키 별칭만 정의합니다. 선택 코드의 숫자 변환은 `config/catboost_mappings.py`, PSF6 원문 범주는 `config/environment_schema.py`에서 관리합니다. HEP 계산은 제거했으며 기본 F.4의 경과 개월 수 공식은 유지합니다. 서버를 재시작한 후 설문을 다시 제출해야 하며, 이전 `sessionStorage` 결과는 자동 재계산되지 않습니다.
+`config/mappings.py`는 PSF 이름·출력 등급을 정의합니다. 선택 코드의 숫자 변환과 문항 키 별칭은 `config/catboost_mappings.py`, PSF6 원문 범주는 `config/environment_schema.py`에서 관리합니다. HEP 계산은 제거했으며 기본 F.4의 경과 개월 수 공식은 유지합니다. 서버를 재시작한 후 설문을 다시 제출해야 하며, 이전 `sessionStorage` 결과는 자동 재계산되지 않습니다.
 
-요청에 없는 PSF는 건너뜁니다. 부분 요청에서는 개별 결과만 제공하고 `psf_multiplier_product`는 `null`, `missing_psfs`에는 빠진 PSF ID를 반환합니다. 누락된 PSF를 배수 1로 간주하지 않습니다. **PSF6은 하위 문항을 임의로 채우지 않습니다.** 다른 CatBoost PSF의 기존 하위 문항 기본값 1 처리는 유지하므로 실제 분석에서는 전체 문항을 명시합니다. 단일 CatBoost API에는 최상위 PSF 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
+요청에 없는 PSF는 건너뜁니다. 부분 요청에서는 개별 결과만 제공하고 `psf_multiplier_product`는 `null`, `missing_psfs`에는 빠진 PSF ID를 반환합니다. 누락된 PSF를 배수 1로 간주하지 않습니다. 일괄 API의 빈 객체 `{}`도 빈 결과와 `null` 곱을 반환합니다. 단일 CatBoost API에는 최상위 PSF 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
+
+**모든 CatBoost PSF는 해당 PSF의 전체 문항이 필수입니다.** 명시한 PSF의 값이 빈 객체·`null`이거나 문항이 빠지면 HTTP 400을 반환하며, 숫자 1로 채우지 않습니다. 알 수 없는 PSF/문항 키, 다른 문항의 선택 코드, 허용 범위를 벗어난 값도 거부합니다. 예를 들어 `/api/predict/1`에 `{}`를 보내거나 `/api/predict`에 `{"F.1": {"F.1.S.1": "F.1.S.1.1"}}`만 보내면 누락 문항이 포함된 오류를 반환합니다.
+
+`F.1.S.3`/`F.1.3` 문항 별칭과 `F.1`/`psf1` PSF 별칭은 계속 지원합니다. 같은 항목을 두 이름으로 보내면 정규화한 원변수 값이 같아야 합니다. 같으면 한 번 처리하고, 다르면 HTTP 400을 반환합니다. 두 불완전한 PSF 객체를 합쳐 문항을 채우지 않으며, GMM 결과가 우연히 같아도 원변수 값이 다른 별칭은 거부합니다.
+
+기본 `/api/predict`의 F.4 공식은 `training_elapsed_months`만 필수입니다. 화면이 함께 보내는 설문 문항은 선택 사항이지만, 제공한 문항의 키·값·별칭 충돌은 검사합니다. F.4의 CatBoost API는 설문 7문항이 필수이고 `training_elapsed_months`는 호환용 추가 항목으로 허용하되 예측에 사용하지 않습니다.
 
 성공 응답은 `{"success": true, "results": [...]}`이며 단일 예측은 `result` 객체를 사용합니다.
 
@@ -331,7 +337,7 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/psf1/predict' -Co
 }
 ```
 
-기본·단일·CatBoost 별칭·모델 검증 API의 `ValueError`와 시간·월별 API의 입력 검증 오류는 HTTP 400, 기타 실행 오류는 500을 반환합니다. 상태 코드와 `success`·`error`를 함께 확인합니다.
+모든 API는 `Content-Type: application/json`으로 JSON 객체를 받습니다. 잘못된 JSON 문법, 객체가 아닌 JSON, 필수값 누락·오타·별칭 충돌 등 입력 검증 오류는 HTTP 400을 반환합니다. JSON이 아닌 전송 형식 또는 누락된 Content-Type은 HTTP 415이며, 두 경우 모두 `{"success": false, "error": "..."}` 형태로 반환합니다. HTTP 입력 오류를 500으로 바꾸지 않습니다. 실제 내부 실행 오류는 500을 반환합니다. 시간·월별 API도 정의된 요청 필드만 허용합니다. 상태 코드와 `success`·`error`를 함께 확인합니다.
 
 ## 프로젝트 구조
 
@@ -411,7 +417,7 @@ python -B -m unittest discover -s tests -p "test_*.py" -v
 node --test tests/input-encoding.test.cjs
 ```
 
-57개 문항의 157개 화면 선택지를 XLSX 기준표와 대조하고, 선택 코드·기존 별칭·숫자 입력 검증 및 PSF2·4·8의 실제 GMM 특성 생성을 확인합니다. PSF6의 32개 선택지는 원문 문자열·14개 특성 순서와 별도로 대조하며, 온도·습도 세 수준 보존, GMM 미사용, 저장 모델의 입력 스키마, 모든 예측 API 별칭의 두 클래스 출력과 오류 응답을 검증합니다. 화면 코드 검증은 선택지 순서·문구 변경에도 코드가 유지되는지 확인합니다. XLSX는 테스트에서 Python 표준 라이브러리로 읽으며, 모델 전처리 테스트에는 프로젝트의 Python 의존성이 필요합니다.
+57개 문항의 157개 화면 선택지를 XLSX 기준표와 대조하고, 선택 코드·기존 별칭·숫자 입력 검증 및 PSF2·4·8의 실제 GMM 특성 생성을 확인합니다. PSF6의 32개 선택지는 원문 문자열·14개 특성 순서와 별도로 대조하며, 온도·습도 세 수준 보존, GMM 미사용, 저장 모델의 입력 스키마, 모든 예측 API 별칭의 두 클래스 출력과 오류 응답을 검증합니다. `tests/test_api_validation.py`는 PSF1~8 문항 누락, 잘못된 키·값, 문항/PSF 별칭 충돌, JSON 문법·전송 형식, 부분 요청, F.4 공식과 CatBoost 입력 차이를 검증합니다. 화면 코드 검증은 선택지 순서·문구 변경에도 코드가 유지되는지 확인합니다. XLSX는 테스트에서 Python 표준 라이브러리로 읽으며, 모델 전처리 테스트에는 프로젝트의 Python 의존성이 필요합니다.
 
 ### 기능 확인 순서
 

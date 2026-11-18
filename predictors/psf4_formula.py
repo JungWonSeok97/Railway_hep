@@ -1,5 +1,7 @@
 import math
 
+from preprocessing.catboost_features import normalize_catboost_conditions
+
 
 PSF4_PREDICTED_TEXT = {
     0: "F.4.1",
@@ -49,9 +51,10 @@ def _validate_training_elapsed_months(
             "숫자여야 합니다."
         )
 
-    training_elapsed_months = float(
-        training_elapsed_months
-    )
+    try:
+        training_elapsed_months = float(training_elapsed_months)
+    except OverflowError as exc:
+        raise ValueError("training_elapsed_months는 유한한 숫자여야 합니다.") from exc
 
     if (
         not math.isfinite(training_elapsed_months)
@@ -65,7 +68,8 @@ def _validate_training_elapsed_months(
     return training_elapsed_months
 
 
-def predict_psf4_formula(psf_input):
+def normalize_psf4_formula_input(psf_input):
+    """Require months; validate any survey fields supplied by the web form."""
     if not isinstance(psf_input, dict):
         raise ValueError(
             "F.4는 JSON 객체여야 합니다."
@@ -84,6 +88,17 @@ def predict_psf4_formula(psf_input):
             )
         )
     )
+
+    return {
+        **normalize_catboost_conditions(4, psf_input, require_all=False),
+        "training_elapsed_months": training_elapsed_months,
+    }
+
+
+def predict_psf4_formula(psf_input):
+    training_elapsed_months = normalize_psf4_formula_input(psf_input)[
+        "training_elapsed_months"
+    ]
 
     psf_multiplier = _calculate_psf_multiplier(
         training_elapsed_months

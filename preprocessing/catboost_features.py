@@ -4,14 +4,13 @@ import joblib
 import numpy as np
 
 from config.paths import GMM_MODEL_DIR
-from config.mappings import get_condition_value
 from config.catboost_mappings import (
     CATBOOST_ALLOWED_VALUES,
     CATBOOST_CODE_TO_VALUE,
     canonical_condition_key,
 )
 from config.catboost_config import CATBOOST_CONFIG
-from preprocessing.environment_features import build_environment_features
+from preprocessing.environment_features import normalize_environment_conditions
 
 
 # =====================================================
@@ -115,11 +114,12 @@ def normalize_catboost_condition(
             f"올바르지 않습니다: {value}"
         )
 
-    if (
-        not np.isfinite(value)
-        or float(value)
-        not in CATBOOST_ALLOWED_VALUES[condition_key]
-    ):
+    try:
+        numeric = float(value)
+    except OverflowError as exc:
+        raise ValueError(f"{condition_key} 값이 허용 범위를 벗어났습니다.") from exc
+
+    if not np.isfinite(numeric) or numeric not in CATBOOST_ALLOWED_VALUES[condition_key]:
         allowed = ", ".join(
             str(number) for number in sorted(CATBOOST_ALLOWED_VALUES[condition_key])
         )
@@ -301,6 +301,45 @@ def predict_composite_feature(
 # API 입력 -> CatBoost 입력 Feature
 # =====================================================
 
+def normalize_catboost_conditions(psf_id, conditions, *, require_all=True):
+    """Validate original questions before GMM or model inference.
+
+    Equivalent current/legacy aliases are accepted after value normalization.
+    PSF4's optional training_elapsed_months is formula metadata, not a CatBoost
+    feature; accepting it preserves requests shared with the default endpoint.
+    """
+    if psf_id not in CATBOOST_CONFIG:
+        raise ValueError(f"지원하지 않는 PSF ID입니다: {psf_id}")
+    if not isinstance(conditions, dict):
+        raise ValueError(f"F.{psf_id} 입력은 JSON 객체여야 합니다.")
+    if psf_id == 6:
+        return normalize_environment_conditions(conditions)
+
+    expected = list(dict.fromkeys(
+        key for _, keys in CATBOOST_CONFIG[psf_id]["features"] for key in keys
+    ))
+    resolved = {}
+    for key, value in conditions.items():
+        if not isinstance(key, str):
+            raise ValueError(f"F.{psf_id} 문항 키는 문자열이어야 합니다.")
+        if psf_id == 4 and key == "training_elapsed_months":
+            continue
+        field = canonical_condition_key(key)
+        if field not in expected:
+            raise ValueError(f"F.{psf_id}에 지원하지 않는 문항 키입니다: {key}")
+        normalized = normalize_catboost_condition(value, field)
+        if field in resolved and resolved[field] != normalized:
+            raise ValueError(f"{field}의 기본 키와 별칭 값이 서로 다릅니다.")
+        resolved[field] = normalized
+    missing = [field for field in expected if field not in resolved]
+    if require_all and missing:
+        raise ValueError(
+            f"F.{psf_id}에는 {len(expected)}개 문항이 모두 필요합니다. 누락: "
+            + ", ".join(missing)
+        )
+    return resolved
+
+
 def build_catboost_features(
     psf_id,
     conditions,
@@ -320,24 +359,9 @@ def build_catboost_features(
         -> 0 / 1 / 2
     """
 
-    if not isinstance(
-        conditions,
-        dict,
-    ):
-        raise ValueError(
-            f"F.{psf_id} 입력은 "
-            f"JSON 객체여야 합니다."
-        )
-
-    if psf_id not in CATBOOST_CONFIG:
-
-        raise ValueError(
-            f"지원하지 않는 PSF ID입니다: "
-            f"{psf_id}"
-        )
-
+    conditions = normalize_catboost_conditions(psf_id, conditions)
     if psf_id == 6:
-        return build_environment_features(conditions)
+        return [conditions[keys[0]] for _, keys in CATBOOST_CONFIG[6]["features"]]
 
     config = CATBOOST_CONFIG[
         psf_id
@@ -362,22 +386,7 @@ def build_catboost_features(
 
         for condition_key in condition_keys:
 
-            raw_value = get_condition_value(
-                conditions,
-                condition_key,
-                1,
-            )
-
-            value = (
-                normalize_catboost_condition(
-                    raw_value,
-                    condition_key,
-                )
-            )
-
-            values.append(
-                value
-            )
+            values.append(conditions[condition_key])
 
         # =============================
         # 단일 Feature

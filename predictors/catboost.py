@@ -87,6 +87,8 @@ def predict_psf_catboost(
 ):
     """단일 PSF CatBoost 예측"""
 
+    feature_values = build_catboost_features(psf_id, conditions)
+
     model = load_catboost_model(
         psf_id
     )
@@ -104,13 +106,6 @@ def predict_psf_catboost(
         for feature_name, _
         in config["features"]
     ]
-
-    feature_values = (
-        build_catboost_features(
-            psf_id,
-            conditions,
-        )
-    )
 
     model_input = pd.DataFrame(
         [feature_values],
@@ -217,6 +212,8 @@ def predict_psf_catboost_test(
     - 실제 CatBoost 입력 Feature도 반환
     """
 
+    feature_values = build_catboost_features(psf_id, conditions)
+
     model = load_catboost_model(
         psf_id
     )
@@ -234,13 +231,6 @@ def predict_psf_catboost_test(
         for feature_name, _
         in config["features"]
     ]
-
-    feature_values = (
-        build_catboost_features(
-            psf_id,
-            conditions,
-        )
-    )
 
     model_input = pd.DataFrame(
         [feature_values],

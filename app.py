@@ -5,6 +5,7 @@
     send_from_directory,
 )
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 from predictors.catboost import (
     predict_psf_catboost,
@@ -19,8 +20,10 @@ from predictors.psf1_forecast import (
 
 from predictors.psf4_formula import (
     build_psf4_forecast,
+    normalize_psf4_formula_input,
     predict_psf4_formula,
 )
+from preprocessing.catboost_features import normalize_catboost_conditions
 
 
 # =====================================================
@@ -30,6 +33,49 @@ from predictors.psf4_formula import (
 app = Flask(__name__)
 app.json.sort_keys = False
 CORS(app)
+
+
+def read_json_object(allowed_keys=None):
+    """Preserve malformed JSON (400) and unsupported media type (415)."""
+    data = request.get_json()
+    if not isinstance(data, dict):
+        raise ValueError("요청 본문은 JSON 객체여야 합니다.")
+    if allowed_keys is not None:
+        unknown = [key for key in data if key not in allowed_keys]
+        if unknown:
+            raise ValueError("지원하지 않는 요청 키입니다: " + ", ".join(unknown))
+    return data
+
+
+def normalize_batch_inputs(data, *, formula_psf4=False):
+    """Validate every supplied PSF before running any prediction.
+
+    An absent PSF is allowed. A supplied empty/null/incomplete PSF is not.
+    Compare aliases before GMM compression, which can erase differences.
+    """
+    allowed = {key for psf in range(1, 9) for key in (f"F.{psf}", f"psf{psf}")}
+    unknown = [key for key in data if key not in allowed]
+    if unknown:
+        raise ValueError("지원하지 않는 PSF 키입니다: " + ", ".join(unknown))
+    resolved = []
+    for psf_id in range(1, 9):
+        aliases = [key for key in (f"F.{psf_id}", f"psf{psf_id}") if key in data]
+        if not aliases:
+            continue
+        values = [
+            normalize_psf4_formula_input(data[key])
+            if formula_psf4 and psf_id == 4
+            else normalize_catboost_conditions(psf_id, data[key])
+            for key in aliases
+        ]
+        if any(value != values[0] for value in values[1:]):
+            raise ValueError(f"F.{psf_id}와 psf{psf_id}의 값이 서로 다릅니다.")
+        resolved.append((psf_id, values[0]))
+    return resolved
+
+
+def http_error_response(error):
+    return jsonify({"success": False, "error": error.description}), error.code
 
 
 # =====================================================
@@ -85,40 +131,20 @@ def serve_images(filename):
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
-        data = request.json
-
-        if not isinstance(data, dict):
-            raise ValueError(
-                "요청 본문은 JSON 객체여야 합니다."
-            )
+        data = read_json_object()
         
         results = []
         
-        for psf_id in range(1, 9):
-            request_key = f"F.{psf_id}"
-            legacy_key = f"psf{psf_id}"
-            psf_input = data.get(request_key)
-
-            if psf_input is None:
-                psf_input = data.get(legacy_key)
-
-            if psf_input is None:
-                if psf_id == 6 and (request_key in data or legacy_key in data):
-                    raise ValueError("F.6 입력은 14개 문항을 포함한 JSON 객체여야 합니다.")
-                continue
-
+        for psf_id, psf_input in normalize_batch_inputs(data, formula_psf4=True):
             if psf_id == 4:
                 result = predict_psf4_formula(
                     psf_input
                 )
-            elif psf_input or psf_id == 6:
+            else:
                 result = predict_psf_catboost(
                     psf_id,
                     psf_input,
                 )
-            else:
-                continue
-
             results.append(result)
         
         return jsonify({
@@ -131,6 +157,9 @@ def predict():
             "success": False,
             "error": str(e)
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
         return jsonify({
@@ -149,12 +178,7 @@ def predict():
 )
 def predict_psf1_over_time():
     try:
-        data = request.get_json(silent=True)
-
-        if not isinstance(data, dict):
-            raise ValueError(
-                "요청 본문은 JSON 객체여야 합니다."
-            )
+        data = read_json_object({"work_started_at", "base_psf1"})
 
         result = build_psf1_forecast(
             data.get("work_started_at"),
@@ -171,6 +195,9 @@ def predict_psf1_over_time():
             "success": False,
             "error": str(e),
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
         return jsonify({
@@ -189,12 +216,7 @@ def predict_psf1_over_time():
 )
 def forecast_psf4():
     try:
-        data = request.get_json(silent=True)
-
-        if not isinstance(data, dict):
-            raise ValueError(
-                "요청 본문은 JSON 객체여야 합니다."
-            )
+        data = read_json_object({"training_elapsed_months"})
 
         result = build_psf4_forecast(
             data.get("training_elapsed_months")
@@ -211,6 +233,9 @@ def forecast_psf4():
             "error": str(e),
         }), 400
 
+    except HTTPException as e:
+        return http_error_response(e)
+
     except Exception as e:
         return jsonify({
             "success": False,
@@ -226,7 +251,7 @@ def predict_single(psf_id):
     """단일 PSF CatBoost 예측"""
 
     try:
-        conditions = request.get_json()
+        conditions = read_json_object()
 
         result = predict_psf_catboost(
             psf_id,
@@ -243,6 +268,9 @@ def predict_single(psf_id):
             "success": False,
             "error": str(e),
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
 
@@ -267,53 +295,12 @@ def predict_single(psf_id):
 def predict_catboost():
 
     try:
-        data = request.get_json()
-
-        if not isinstance(
-            data,
-            dict,
-        ):
-            raise ValueError(
-                "요청 본문은 "
-                "JSON 객체여야 합니다."
-            )
+        data = read_json_object()
 
         results = []
 
-        for psf_id in range(
-            1,
-            9,
-        ):
-
-            request_key = (
-                f"F.{psf_id}"
-            )
-
-            legacy_key = (
-                f"psf{psf_id}"
-            )
-
-            psf_input = data.get(
-                request_key
-            )
-
-            if psf_input is None:
-                psf_input = data.get(
-                    legacy_key
-                )
-
-            if psf_input or (psf_id == 6 and (request_key in data or legacy_key in data)):
-
-                result = (
-                    predict_psf_catboost(
-                        psf_id,
-                        psf_input,
-                    )
-                )
-
-                results.append(
-                    result
-                )
+        for psf_id, psf_input in normalize_batch_inputs(data):
+            results.append(predict_psf_catboost(psf_id, psf_input))
 
         return jsonify({
             "success": True,
@@ -325,6 +312,9 @@ def predict_catboost():
             "success": False,
             "error": str(e),
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
 
@@ -347,9 +337,7 @@ def predict_catboost_single(
 ):
 
     try:
-        conditions = (
-            request.get_json()
-        )
+        conditions = read_json_object()
 
         result = (
             predict_psf_catboost(
@@ -368,6 +356,9 @@ def predict_catboost_single(
             "success": False,
             "error": str(e),
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
 
@@ -390,15 +381,7 @@ def test_predict_single(psf_id):
     """
 
     try:
-        conditions = request.get_json()
-
-        if not isinstance(
-            conditions,
-            dict,
-        ):
-            raise ValueError(
-                "요청 본문은 JSON 객체여야 합니다."
-            )
+        conditions = read_json_object()
 
         result = (
             predict_psf_catboost_test(
@@ -417,6 +400,9 @@ def test_predict_single(psf_id):
             "success": False,
             "error": str(e),
         }), 400
+
+    except HTTPException as e:
+        return http_error_response(e)
 
     except Exception as e:
 
