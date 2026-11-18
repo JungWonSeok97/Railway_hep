@@ -116,7 +116,8 @@
 
             const big_diagnosisHEP = (baseHEP.diagnosis * psfMultiplier) / (baseHEP.diagnosis * (psfMultiplier - 1) + 1)
             const big_executionHEP = (baseHEP.execution * psfMultiplier) / (baseHEP.execution * (psfMultiplier - 1) + 1)
-            const big_finalHEP = big_diagnosisHEP + big_executionHEP;
+            // 보정한 두 확률을 더하면 1을 넘을 수 있으므로(최대 2) 둘 중 하나라도 실패할 확률로 합친다.
+            const big_finalHEP = 1 - (1 - big_diagnosisHEP) * (1 - big_executionHEP);
 
 
             if (finalHEP > 1) {

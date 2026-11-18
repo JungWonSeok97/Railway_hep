@@ -136,3 +136,18 @@ test('missing old-session inputs prompt for input; API failure keeps other graph
   failed.nodes.monthlyForecastForm.listeners.submit({ preventDefault() {} }); await settle();
   assert.equal(failed.calls.length, 3);
 });
+
+test('HEP stays a probability (<= 1) when every PSF is at its worst level', () => {
+  const worst = { 1: 3, 2: 3, 3: 3, 4: 3, 5: 2, 6: 2, 7: 3, 8: 3 };
+  const extreme = Array.from({ length: 8 }, (_, i) => ({
+    psf_id: `F.${i + 1}`,
+    predicted_label: worst[i + 1] - 1,
+    predicted_text: `F.${i + 1}.${worst[i + 1]}`,
+    ...(i === 3 ? { hep_multiplier: 4.83, probabilities: null } : {}),
+  }));
+  const hep = calculate(extreme);
+  assert.ok(hep.psfMultiplier > 1e6);
+  assert.ok(hep.diagnosisHEP < 1 && hep.executionHEP < 1);
+  assert.ok(hep.finalHEP <= 1, `finalHEP=${hep.finalHEP}`);
+  assert.ok(Math.abs(hep.finalHEP - (1 - (1 - hep.diagnosisHEP) * (1 - hep.executionHEP))) < 1e-12);
+});

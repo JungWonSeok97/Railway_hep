@@ -897,7 +897,14 @@
       }
       const houses = document.querySelectorAll('.house');
 
-      const optionCodeNumbersByField = {};
+      // 화면 보기 순서와 config/mappings.py code_to_value의 코드 순서가 다른 문항.
+      // 화면 n번째 보기 -> 보낼 코드 번호 (값이 클수록 나쁨: 0 좋음 ~ 2 나쁨)
+      const optionCodeNumbersByField = {
+        'F.1.S.3': [3, 2, 1], // 수면시간: 8시간 이상, 6~8시간, 6시간 이내
+        'F.3.S.2': [3, 2, 1], // 절차 기술의 복잡성: 낮음, 보통, 높음
+        'F.6.S.7': [2, 1],    // 황사: 숨 쉬기 불편, 사물을 볼 수 없음
+        'F.6.S.9': [2, 1],    // 마찰계수: SCOF >= 0.63(안전), < 0.63
+      };
 
       const getValue = (select, fieldKey) => {
         const selectedText = select?.selectedOptions[0]?.text.trim() || '';
