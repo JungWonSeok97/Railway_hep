@@ -803,6 +803,7 @@
   </div>
 
   <script src="/static/input-encoding.js"></script>
+  <script src="/static/psf-multipliers.js"></script>
   <script>
     // 진행률 업데이트
     const allSelects = document.querySelectorAll('.room-select');
@@ -1037,6 +1038,7 @@
           return result;
         })
         .then(result => {
+          PsfMultipliers.validateResponse(result);
           console.log('결과:', result);
 
           result.forecast_inputs = {

@@ -1,6 +1,4 @@
-﻿import os
-
-from flask import (
+﻿from flask import (
     Flask,
     request,
     jsonify,
@@ -8,21 +6,12 @@ from flask import (
 )
 from flask_cors import CORS
 
-from config.paths import (
-    MODEL_DIR,
-    SURVEY_DATA_PATH,
-)
-
-from predictors.cnn import (
-    models as cnn_models,
-    predict_psf,
-    train_model_for_psf,
-)
-
 from predictors.catboost import (
     predict_psf_catboost,
     predict_psf_catboost_test,
 )
+
+from predictors.psf_multipliers import summarize_psf_results
 
 from predictors.psf1_forecast import (
     build_psf1_forecast,
@@ -90,7 +79,7 @@ def serve_images(filename):
 
 
 # =====================================================
-# 기존 CNN API
+# 기본 PSF 예측·배수 API
 # =====================================================
 
 @app.route('/api/predict', methods=['POST'])
@@ -123,11 +112,6 @@ def predict():
                     psf_input
                 )
             elif psf_input or psf_id == 6:
-                # 모델 교체 위치
-                # result = predict_psf(
-                #     psf_id,
-                #     psf_input,
-                # )
                 result = predict_psf_catboost(
                     psf_id,
                     psf_input,
@@ -139,7 +123,7 @@ def predict():
         
         return jsonify({
             "success": True,
-            "results": results
+            **summarize_psf_results(results),
         })
 
     except ValueError as e:
@@ -196,7 +180,7 @@ def predict_psf1_over_time():
 
 
 # =====================================================
-# PSF4 미래 HEP 배수 API
+# PSF4 미래 배수 API
 # =====================================================
 
 @app.route(
@@ -333,7 +317,7 @@ def predict_catboost():
 
         return jsonify({
             "success": True,
-            "results": results,
+            **summarize_psf_results(results),
         })
 
     except ValueError as e:
@@ -392,136 +376,6 @@ def predict_catboost_single(
             "error": str(e),
         }), 500
 
-
-# =====================================================
-# 기존 CNN 재학습
-# =====================================================
-
-@app.route(
-    "/api/retrain",
-    methods=["POST"],
-)
-def retrain_models():
-
-    try:
-        # 메모리 모델 초기화
-        cnn_models.clear()
-
-        # 기존 파일 삭제
-        for psf_id in range(
-            1,
-            9,
-        ):
-
-            model_path = os.path.join(
-                MODEL_DIR,
-                f"psf{psf_id}_model.h5",
-            )
-
-            if os.path.exists(
-                model_path
-            ):
-                os.remove(
-                    model_path
-                )
-
-                print(
-                    f"PSF{psf_id} "
-                    f"기존 모델 삭제됨"
-                )
-
-        results = []
-
-        # 모든 PSF 재학습
-        for psf_id in range(
-            1,
-            9,
-        ):
-
-            model = (
-                train_model_for_psf(
-                    psf_id
-                )
-            )
-
-            cnn_models[
-                psf_id
-            ] = model
-
-            results.append(
-                f"PSF{psf_id} 재학습 완료"
-            )
-
-        return jsonify({
-            "success": True,
-            "message": (
-                "모든 모델이 "
-                "재학습되었습니다."
-            ),
-            "results": results,
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "success": False,
-            "error": str(e),
-        }), 500
-
-
-# =====================================================
-# CNN 모델 상태
-# =====================================================
-
-@app.route(
-    "/api/model-status",
-    methods=["GET"],
-)
-def model_status():
-
-    status = {}
-
-    for psf_id in range(
-        1,
-        9,
-    ):
-
-        model_path = os.path.join(
-            MODEL_DIR,
-            f"psf{psf_id}_model.h5",
-        )
-
-        status[
-            f"PSF{psf_id}"
-        ] = {
-            "saved": os.path.exists(
-                model_path
-            ),
-
-            "loaded": (
-                psf_id
-                in cnn_models
-            ),
-
-            "current": (
-                os.path.exists(
-                    model_path
-                )
-                and
-                os.path.getmtime(
-                    model_path
-                )
-                >=
-                os.path.getmtime(
-                    SURVEY_DATA_PATH
-                )
-            ),
-        }
-
-    return jsonify({
-        "success": True,
-        "status": status,
-    })
 
 @app.route(
     "/api/test/predict/<int:psf_id>",

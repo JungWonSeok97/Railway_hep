@@ -10,7 +10,7 @@ from predictors.psf4_formula import build_psf4_forecast
 OUT = Path(__file__).resolve().parent
 elapsed_months = 6
 forecast = build_psf4_forecast(elapsed_months)
-values = forecast['series']['hep_multipliers']
+values = forecast['series']['psf_multipliers']
 months = [i / 10 for i in range(len(values))]
 plt.rcParams['font.family'] = 'Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] = False
@@ -25,7 +25,7 @@ def draw_chart(ax):
     ax.annotate(f'현재 {values[0]:.3f}', (0, values[0]), xytext=(12, 14),
                 textcoords='offset points', fontsize=11, color='#1e3a5f')
     ax.set(xlim=(-1, 61), ylim=(0, 5.35),
-           xlabel='현재 이후 경과 개월 수 (개월)', ylabel='PSF4 가중치 (HEP 배수)')
+           xlabel='현재 이후 경과 개월 수 (개월)', ylabel='PSF4 배수 (배)')
     ax.set_xticks([0, 12, 24, 36, 48, 60])
     ax.set_yticks([0, 1, 2, 3, 4, 5])
     ax.grid(axis='y', alpha=0.18)
@@ -60,7 +60,7 @@ for ypos, label, body in sections:
     fig.text(0.665, ypos, label, fontsize=17, color='#203b64')
     fig.text(0.665, ypos - 0.055, body, fontsize=14, va='top',
              linespacing=1.65, color='#202020')
-fig.text(0.065, 0.045, '※ X축의 0개월은 현재 시점이며, Y축은 HEP 계산에 사용하는 PSF4 가중치이다.',
+fig.text(0.065, 0.045, '※ X축의 0개월은 현재 시점이며, Y축은 PSF 배수의 곱을 구성하는 PSF4 배수이다.',
          fontsize=11, color='#475569')
 fig.savefig(OUT / 'psf4-monthly-explained.png', bbox_inches='tight', pad_inches=0.2)
 plt.close(fig)

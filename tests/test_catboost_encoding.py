@@ -7,13 +7,11 @@ The XLSX reader uses the standard library; no Excel or openpyxl dependency is ne
 import contextlib
 import io
 import sys
-import types
 import unittest
 import warnings
 from collections import defaultdict
 from html.parser import HTMLParser
 from pathlib import Path
-from unittest.mock import patch
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -32,17 +30,11 @@ from config.catboost_mappings import (
     CATBOOST_CODE_TO_VALUE,
     CATBOOST_OPTION_VALUES,
 )
-from config.mappings import PSF_NAMES, code_to_value as cnn_code_to_value
-
-# config.paths creates a CNN output directory at import time. These read-only
-# tests need only the existing GMM directory, so do not import that side effect.
-_paths = types.ModuleType("config.paths")
-_paths.GMM_MODEL_DIR = str(ROOT / "models" / "gmm")
-with patch.dict(sys.modules, {"config.paths": _paths}):
-    from preprocessing.catboost_features import (
-        build_catboost_features,
-        normalize_catboost_condition,
-    )
+from config.mappings import PSF_NAMES
+from preprocessing.catboost_features import (
+    build_catboost_features,
+    normalize_catboost_condition,
+)
 
 
 def normalize_text(text):
@@ -225,14 +217,6 @@ class CatBoostEncodingTests(unittest.TestCase):
                 normalize_catboost_condition(code, field)
         with self.assertRaises(ValueError):
             normalize_catboost_condition(0, "F.99.S.1")
-
-    def test_cnn_encoding_is_not_changed_by_catboost_correction(self):
-        # The legacy CNN has a separate training contract; this patch does not
-        # silently change its input schema while retaining old CNN weights.
-        self.assertEqual(cnn_code_to_value["F.2.S.1.2"], 2)
-        self.assertEqual(CATBOOST_CODE_TO_VALUE["F.2.S.1.2"], 1)
-        self.assertEqual(cnn_code_to_value["F.6.S.10.2"], 1)
-        self.assertEqual(CATBOOST_CODE_TO_VALUE["F.6.S.10.2"], 0)
 
     def test_saved_gmm_features_match_workbook_encoded_inputs(self):
         for psf, config in CATBOOST_CONFIG.items():

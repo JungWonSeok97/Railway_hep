@@ -1,0 +1,5 @@
+.multiplier-summary { padding: 24px; text-align: center; background: #f5f8fc; border: 1px solid #dce5ef; border-radius: 14px; margin-bottom: 24px; }
+.multiplier-summary h2 { margin: 0 0 12px; color: #193c68; font-size: 21px; }
+.multiplier-value { margin: 10px 0; color: #173e70; font-size: clamp(26px, 5vw, 40px); font-weight: 750; overflow-wrap: anywhere; }
+.multiplier-note { color: #52657a; font-size: 14px; line-height: 1.7; margin: 12px auto 0; max-width: 680px; }
+.psf-factor { margin: 12px 0 4px; text-align: center; color: #193c68; font-weight: 600; }

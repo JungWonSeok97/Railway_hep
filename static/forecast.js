@@ -5,23 +5,23 @@
     return results.map(result => result.psf_id === psfId ? { ...result, ...changes } : { ...result });
   }
 
-  function hepValue(results, calculate) {
-    const value = calculate(results).finalHEP;
-    if (!Number.isFinite(value) || value < 0) throw new Error('HEP 계산 결과가 올바르지 않습니다.');
+  function multiplierProduct(results, calculate) {
+    const value = calculate(results);
+    if (!Number.isFinite(value) || value <= 0) throw new Error('PSF 배수의 곱이 올바르지 않습니다.');
     return value;
   }
 
   function monthlyPoints(response, results, calculate) {
     const series = response.series;
     if (!series || series.x_start !== 0 || series.x_end !== 60 || series.x_step !== 0.1 ||
-        !Array.isArray(series.hep_multipliers) || series.hep_multipliers.length !== 601) {
+        !Array.isArray(series.psf_multipliers) || series.psf_multipliers.length !== 601) {
       throw new Error('월별 그래프 데이터 형식이 올바르지 않습니다.');
     }
-    return series.hep_multipliers.map((multiplier, index) => {
-      if (!Number.isFinite(multiplier) || multiplier < 0) throw new Error('교육·훈련 배수 데이터가 올바르지 않습니다.');
+    return series.psf_multipliers.map((multiplier, index) => {
+      if (!Number.isFinite(multiplier) || multiplier <= 0) throw new Error('교육·훈련 배수 데이터가 올바르지 않습니다.');
       return {
         x: Number((series.x_start + index * series.x_step).toFixed(1)),
-        y: hepValue(withPrediction(results, 'F.4', { hep_multiplier: multiplier }), calculate),
+        y: multiplierProduct(withPrediction(results, 'F.4', { psf_multiplier: multiplier }), calculate),
         multiplier,
       };
     });
@@ -36,15 +36,17 @@
     segments.forEach((segment, index) => {
       const start = segment.start_elapsed_hours;
       const end = segment.end_elapsed_hours;
-      if (!Number.isFinite(start) || start < 0 || ![0, 1, 2].includes(segment.predicted_label) ||
+      if (!Number.isFinite(segment.psf_multiplier) || segment.psf_multiplier <= 0 ||
+          !Number.isFinite(start) || start < 0 || ![0, 1, 2].includes(segment.predicted_label) ||
           (end !== null && (!Number.isFinite(end) || end < start)) ||
           (index < segments.length - 1 && end !== segments[index + 1].start_elapsed_hours) ||
           (index === segments.length - 1 && end !== null)) {
         throw new Error('시간별 그래프 구간 데이터가 올바르지 않습니다.');
       }
       if (start >= horizon) return;
-      const y = hepValue(withPrediction(results, 'F.1', {
+      const y = multiplierProduct(withPrediction(results, 'F.1', {
         predicted_label: segment.predicted_label,
+        psf_multiplier: segment.psf_multiplier,
         predicted_text: `F.1.${segment.predicted_label + 1}`,
       }), calculate);
       points.push({ x: start, y, level: segment.predicted_label });
@@ -83,7 +85,7 @@
     const monthly = kind === 'monthly';
     const limit = monthly ? 60 : 24;
     const unit = monthly ? '개월' : '시간';
-    const title = monthly ? '향후 60개월 HEP 변화' : '조회 시점부터 24시간 HEP 변화';
+    const title = monthly ? '향후 60개월 PSF 배수 변화' : '조회 시점부터 24시간 PSF 배수 변화';
     const values = points.map(point => point.y);
     const maxY = Math.max(...values) * 1.12 || 1;
     const plot = { left: 90, top: 38, width: 620, height: 230 };
@@ -91,7 +93,7 @@
     const y = value => plot.top + plot.height - value / maxY * plot.height;
     const svg = svgNode('svg', { viewBox: '0 0 750 335', role: 'img', 'aria-label': title, class: 'forecast-svg' });
     svg.append(svgNode('title', {}, title));
-    svg.append(svgNode('desc', {}, '가로축은 조회 시점부터 경과 시간, 세로축은 HEP입니다. 아래 슬라이더로 수치를 확인할 수 있습니다.'));
+    svg.append(svgNode('desc', {}, '가로축은 조회 시점부터 경과 시간, 세로축은 PSF 배수의 곱(배)입니다. 아래 슬라이더로 수치를 확인할 수 있습니다.'));
     for (let i = 0; i <= 4; i++) {
       const value = maxY * i / 4;
       svg.append(svgNode('line', { x1: plot.left, x2: x(limit), y1: y(value), y2: y(value), class: 'forecast-grid-line' }));
@@ -101,7 +103,7 @@
       const value = limit * i / 6;
       svg.append(svgNode('text', { x: x(value), y: 292, 'text-anchor': 'middle' }, value));
     }
-    svg.append(svgNode('text', { x: plot.left, y: 20 }, 'HEP'));
+    svg.append(svgNode('text', { x: plot.left, y: 20 }, 'PSF 배수의 곱 (배)'));
     svg.append(svgNode('text', { x: 400, y: 322, 'text-anchor': 'middle' }, `조회 시점부터 경과 ${unit}`));
     svg.append(svgNode('polyline', {
       points: points.map(point => `${x(point.x)},${y(point.y)}`).join(' '),
@@ -132,8 +134,8 @@
         for (const candidate of points) if (candidate.x <= selectedX) point = candidate;
       }
       marker.setAttribute('cx', x(selectedX)); marker.setAttribute('cy', y(point.y));
-      const extra = monthly ? `교육·훈련 배수 ${number(point.multiplier)}` : `작업부하 ${labels[point.level]}`;
-      output.textContent = `${number(selectedX)}${unit} 후 · HEP ${number(point.y)} · ${extra}`;
+      const extra = monthly ? `교육·훈련 ${number(point.multiplier)}배` : `작업부하 ${labels[point.level]}`;
+      output.textContent = `${number(selectedX)}${unit} 후 · PSF 배수의 곱 ${number(point.y)}배 · ${extra}`;
       slider.setAttribute('aria-valuetext', output.textContent);
     }
     slider.addEventListener('input', inspect);
@@ -164,8 +166,8 @@
     if (openButtons.some(button => !button)) return;
     let data;
     try { data = JSON.parse(sessionStorage.getItem('psfResults')); } catch { return; }
-    if (!data?.success || !Array.isArray(data.results) || data.results.length !== 8 ||
-        !Array.from({ length: 8 }, (_, i) => `F.${i + 1}`).every(id => data.results.some(result => result.psf_id === id))) {
+    try { PsfMultipliers.validateResponse(data); }
+    catch {
       openButtons.forEach(button => { button.disabled = true; });
       return;
     }
@@ -210,7 +212,7 @@
       status.replaceChildren(loadingImage, document.createTextNode('그래프를 불러오고 있습니다…'));
       try {
         const response = await post(monthly ? '/api/psf4/forecast' : '/api/psf1/predict', payload);
-        const points = monthly ? monthlyPoints(response, results, calculateHEP) : hourlyPoints(response, results, calculateHEP);
+        const points = monthly ? monthlyPoints(response, results, PsfMultipliers.calculateProduct) : hourlyPoints(response, results, PsfMultipliers.calculateProduct);
         drawChart(target, points, kind);
         status.textContent = monthly
           ? `교육 후 ${number(payload.training_elapsed_months)}개월 기준 · 향후 60개월, 0.1개월 간격의 601개 예측값`

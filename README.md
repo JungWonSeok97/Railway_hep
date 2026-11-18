@@ -1,8 +1,8 @@
-# Railway HEP — 철도 작업 PSF·인적 오류 예측
+# Railway HEP — 철도 작업 PSF 평가·배수 제공
 
-철도 작업자의 응답으로 **8개 PSF 수준을 예측**하고, 직종별 계수와 PSF 배수로 **진단·수행·최종 HEP**를 계산하는 Flask 웹 애플리케이션입니다. 결과 요약, 항목별 상세 결과, 시간별·월별 변화 그래프를 제공합니다.
+철도 작업자의 응답으로 **8개 PSF 수준과 배수를 결정**하고 **PSF 배수의 곱**을 반환하는 Flask 웹 애플리케이션입니다. 결과 요약, 항목별 분류 확률·배수, 시간별·월별 배수 변화 그래프를 제공합니다. 진단 HEP·수행 HEP·최종 HEP는 계산하거나 반환하지 않습니다. 안전·비안전 직무에 따른 HEP 선택과 계산은 외부 시스템에서 담당합니다.
 
-현재 기본 경로는 **F.4 교육·훈련 계산식 + 나머지 PSF의 CatBoost 분류**입니다. 서버가 PSF를 예측하고 브라우저가 HEP를 계산합니다.
+현재 기본 경로는 **F.4 교육·훈련 계산식 + 나머지 PSF의 CatBoost 분류**입니다. 서버가 PSF별 배수와 전체 곱을 계산하고 브라우저가 배수로 표시합니다. PSF2·4·8의 GMM 경로와 PSF6 원변수 14개 CatBoost 경로는 유지합니다.
 
 [전체 프로젝트](https://github.com/JungWonSeok97/Railway_Human_Error) · [설문 수집 앱](https://github.com/JungWonSeok97/survey) · [정확도 연구보고서](https://github.com/abitocodes/rail-psf-accuracy-memo)
 
@@ -11,7 +11,7 @@
 - [기능과 처리 흐름](#기능과-처리-흐름)
 - [설치 및 실행](#설치-및-실행)
 - [화면 사용 방법](#화면-사용-방법)
-- [PSF 예측과 HEP 계산](#psf-예측과-hep-계산)
+- [PSF 예측과 배수 계산](#psf-예측과-배수-계산)
 - [시간별·월별 그래프](#시간별월별-그래프)
 - [API 사용 안내](#api-사용-안내)
 - [프로젝트 구조](#프로젝트-구조)
@@ -26,15 +26,15 @@
 | --- | --- |
 | 직종 선택 | 기관사, 관제사, 정비사, 선로작업자 |
 | PSF 분석 | 설문 입력으로 수준·분류 확률 예측, F.4는 경과 개월 수 공식 |
-| HEP 요약 | 진단·수행·최종 HEP와 게이지 |
+| 배수 요약 | PSF 배수의 곱과 PSF별 배수 |
 | 상세 결과 | PSF별 수준·확률 또는 공식 배수 |
 | 시간별 그래프 | 조회 시점부터 24시간, 작업부하 F.1 변화 반영 |
 | 월별 그래프 | 현재부터 60개월, 교육·훈련 F.4 변화 반영 |
 | 그래프 조작 | 팝업, 시점 슬라이더, 입력 검증·오류 안내 |
 
-![기본 API에서 F.4는 교육·훈련 공식, 나머지는 CatBoost를 사용하고 브라우저가 HEP를 계산하는 흐름](docs/images/prediction-flow.svg)
+![기본 API에서 F.4는 교육·훈련 공식, 나머지는 CatBoost를 사용하고 서버가 PSF 배수의 곱을 반환하는 흐름](docs/images/prediction-flow.svg)
 
-*그림 1. 기본 예측 경로. 서버가 PSF 수준·확률·배수를 반환하고 브라우저가 직종별 HEP를 계산합니다.*
+*그림 1. 기본 예측 경로. 서버가 PSF 수준·분류 확률·배수와 배수의 곱을 반환합니다. 브라우저는 배수를 표시하고 외부 시스템은 직무별 HEP 규칙을 적용합니다.*
 
 별도의 프런트엔드 빌드나 DB 설정은 없습니다. 이 앱은 Supabase의 설문 응답을 자동으로 읽거나 학습하지 않습니다. 별도 설문 앱과 연계하려면 추출·전처리·학습 과정을 준비해야 합니다.
 
@@ -46,9 +46,9 @@
 - 저장소에 포함된 `models/*_catboost.cbm` 및 `models/gmm/*.joblib`
 - 그래프 테스트를 실행하려면 Node.js
 
-[requirements.txt](requirements.txt)는 Flask, Flask-Cors, NumPy, pandas, scikit-learn, CatBoost, TensorFlow를 선언합니다. 패키지와 Python 버전은 고정되어 있지 않습니다. 선택한 Python·운영체제에서 설치 가능한 조합을 사용하고, 재현이 필요한 실행 환경은 별도로 기록합니다.
+[requirements.txt](requirements.txt)는 Flask, Flask-Cors, NumPy, pandas, scikit-learn, CatBoost를 선언합니다. 패키지와 Python 버전은 고정되어 있지 않습니다. 선택한 Python·운영체제에서 설치 가능한 조합을 사용하고, 재현이 필요한 실행 환경은 별도로 기록합니다.
 
-기본 예측이 CatBoost를 사용하더라도 `app.py`가 CNN 모듈을 가져오므로 **현재 구성에서는 TensorFlow도 필요**합니다. 코드에서 사용하는 `joblib`는 scikit-learn의 의존성으로 설치됩니다.
+예측 서버는 CatBoost·scikit-learn 기반으로 실행됩니다. 코드에서 사용하는 `joblib`는 scikit-learn의 의존성으로 설치됩니다.
 
 ### 저장소 받기
 
@@ -102,14 +102,14 @@ python app.py
 1. 첫 화면에서 직종을 선택합니다.
 2. 8개 PSF 문항과 마지막 직무 교육 후 경과 개월 수를 입력합니다.
 3. **분석하기**를 눌러 결과 요약을 확인합니다.
-4. **상세보기**에서 PSF별 결과와 HEP를 확인합니다.
+4. **상세보기**에서 PSF별 결과와 배수를 확인합니다.
 5. 시간별 또는 월별 예측 팝업을 열고 필요한 값을 입력해 조회합니다.
 6. 슬라이더를 움직여 시점별 값을 확인합니다.
 7. 팝업은 닫기 버튼·Esc·바깥 영역 클릭으로 닫고, 새 분석은 **다시 설문하기**로 시작합니다.
 
 PSF 결과는 `psfResults`, 직종은 `selectedRole` 키로 `sessionStorage`에 저장됩니다. 서버 측 결과 저장·결과 URL 공유 기능은 없습니다. 필요한 데이터가 없으면 같은 탭에서 설문부터 진행합니다.
 
-## PSF 예측과 HEP 계산
+## PSF 예측과 배수 계산
 
 ### 예측 항목
 
@@ -124,7 +124,7 @@ PSF 결과는 `psfResults`, 직종은 `selectedRole` 키로 `sessionStorage`에 
 | F.7 | 작업절차 | CatBoost | 좋음 / 보통 / 나쁨 |
 | F.8 | 복잡성 | GMM 특성 + CatBoost | 보통 / 약간 높음 / 매우 높음 |
 
-PSF 수준의 **분류 확률**, F.4의 **HEP 배수**, 최종 **HEP 계산값**은 서로 다른 값입니다. 분류 확률을 인적 오류 확률로 그대로 해석하지 않습니다.
+PSF 수준의 **분류 확률**과 **PSF 배수**는 서로 다른 값입니다. 분류 확률만 백분율로 표시하며, 개별 배수와 배수의 곱은 `배`로 표시합니다. 배수의 곱에 안전·보통·나쁨 종합 등급이나 0~1/0~2 상한을 적용하지 않습니다.
 
 ### 교육·훈련 배수
 
@@ -136,20 +136,13 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 
 - `x`는 0 이상의 유한한 숫자입니다. 숫자 문자열·불리언은 허용하지 않습니다.
 - 반올림 전 배수 `< 1`이면 수준 0, `1 이상 2 미만`이면 수준 1, `2 이상`이면 수준 2입니다.
-- 배수는 소수점 셋째 자리로 반올림해 `hep_multiplier`로 반환합니다.
+- 배수는 소수점 셋째 자리로 반올림해 `psf_multiplier`로 반환합니다.
 - 기본 F.4의 `probabilities`는 `null`입니다.
 - 화면의 기존 교육·훈련 선택 문항과 달리 기본 F.4 계산은 `training_elapsed_months`를 사용합니다.
 
-### 직종별 계수와 보정
+### PSF 배수의 곱
 
-| 직종 | 진단 기본 계수 d | 수행 기본 계수 e |
-| --- | ---: | ---: |
-| 기관사 | 0.01225 | 0.00615 |
-| 관제사 | 0.0055 | 0.00352 |
-| 정비사 | 0.00279 | 0.00347 |
-| 선로작업자 | 0.01225 | 0.0035 |
-
-각 PSF 수준을 배수로 바꾸고 모두 곱한 값을 `M`으로 사용합니다. 기본 F.4에는 예측 응답의 `hep_multiplier`를 적용합니다.
+`predictors/psf_multipliers.py`가 수준별 배수 기준을 관리합니다. 각 PSF의 예측 코드에 해당하는 배수를 곱해 `psf_multiplier_product`로 반환합니다. 기본 F.4에는 경과 개월 수 공식에서 계산한 `psf_multiplier`를 사용하며, 아래 F.4 범주별 값은 별도 CatBoost 경로에만 적용합니다.
 
 | PSF | 수준별 배수 |
 | --- | --- |
@@ -163,19 +156,12 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 | F.8 | 보통 1 / 약간 높음 4.654 / 매우 높음 11.873 |
 
 ```text
-진단 HEP = d × M
-수행 HEP = e × M
-최종 HEP = 진단 HEP + 수행 HEP
-
-위 합계가 1을 초과하면:
-진단 HEP = (d × M) / (d × (M - 1) + 1)
-수행 HEP = (e × M) / (e × (M - 1) + 1)
-최종 HEP = 보정한 진단 HEP + 보정한 수행 HEP
+M = m1 × m2 × m3 × m4 × m5 × m6 × m7 × m8
 ```
 
-이 설명은 현재 [result.html](result.html)과 [detail_result.html](detail_result.html)의 구현을 문서화한 것입니다. 두 계산 구현은 함께 관리해야 합니다.
+예를 들어 다른 배수가 모두 1이고 교육·훈련 배수가 4.692, 환경 배수가 11.576이면 M은 54.314592배입니다. 교육·훈련 배수가 4.704가 되면 M은 54.453504배로 증가합니다. 곱이 1을 넘더라도 보정식을 바꾸거나 상한을 씌우지 않습니다. 이 값은 확률이 아닙니다.
 
-**현재 표시·범위 제약:** 보정 후 합계에 1 상한을 적용하지 않습니다. 그래프는 계산값에 100을 곱하지 않으며, 상세 화면 일부에는 백분율 변환 없이 `%` 표기가 붙습니다. 다른 시스템으로 값을 옮길 때에는 이 단위·범위 차이를 확인합니다.
+직종별 기본 오류 확률을 곱하거나 진단·수행 값을 합산하지 않습니다. 화면의 직종 선택은 설문 맥락으로 유지하지만 배수 계산에는 사용하지 않습니다. 직무별 안전·비안전 분류와 진단/수행 HEP 선택은 외부 시스템의 책임입니다.
 
 ## 시간별·월별 그래프
 
@@ -186,7 +172,7 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 | 변화시키는 요인 | F.1 작업부하 | F.4 교육·훈련 |
 | 나머지 PSF | 현재 설문 결과로 고정 | 현재 설문 결과로 고정 |
 | 화면 범위 | API 조회 시점부터 24시간 | 현재부터 60개월 |
-| 표현 | 시간 구간별 수준을 HEP로 변환 | 0.1개월 간격 601개 배수를 HEP로 변환 |
+| 표현 | 시간 구간별 F.1 배수 × 나머지 7개 배수 | 0.1개월 간격 F.4 배수 601개 × 나머지 7개 배수 |
 
 시간별 F.1은 원본 수준, 근무 경과 시간 수준, 시간대 수준 중 최댓값을 사용합니다. 경과 시간 경계는 1.3·5.6·10.6·12.8시간이고, 시간대 경계는 06:24·18:24입니다. 한국시간(UTC+09:00)을 사용하며 시간대 없는 입력도 한국시간으로 해석합니다.
 
@@ -200,7 +186,7 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 
 *그림 2. F.1 수준 변화 예시. 근무 시작과 조회가 모두 08:00(KST)인 조건이며 15시간까지만 표시합니다. 실제 웹 그래프의 표시 범위는 조회 시점부터 24시간입니다. 세로축은 최종 HEP가 아닌 F.1 수준입니다.*
 
-![교육 후 6개월이 지난 시점에서 향후 60개월의 F.4 HEP 배수가 증가하는 그래프](output/psf4-monthly-example.png)
+![교육 후 6개월이 지난 시점에서 향후 60개월의 F.4 배수가 증가하는 그래프](output/psf4-monthly-example.png)
 
 *그림 3. F.4 배수 변화 예시. 교육 후 6개월이 지난 상태에서 시작해 향후 60개월을 계산합니다. 세로축은 최종 HEP가 아닌 교육·훈련 배수입니다.*
 
@@ -208,7 +194,7 @@ m4(x) = 0.33 + 4.5 × ((x / 18.555)^4 / (1 + (x / 18.555)^4))
 
 ## API 사용 안내
 
-POST 요청은 `Content-Type: application/json`을 사용합니다. 기본 API는 PSF 결과를 반환하며 최종 HEP는 반환하지 않습니다.
+POST 요청은 `Content-Type: application/json`을 사용합니다. 기본 API는 PSF 결과와 `psf_multiplier_product`를 반환합니다. 진단·수행·최종 HEP 필드는 없습니다.
 
 ### 경로 목록
 
@@ -224,10 +210,8 @@ POST 요청은 `Content-Type: application/json`을 사용합니다. 기본 API�
 | POST | `/api/catboost/predict`, `/api/predict/catboost` | 전체 CatBoost 경로, F.4도 모델 사용 |
 | POST | `/api/catboost/predict/<psf_id>`, `/api/predict/catboost/<psf_id>` | 단일 CatBoost 경로의 별칭 |
 | POST | `/api/test/predict/<psf_id>` | 모델 입력·한글 결과 확인용 |
-| GET | `/api/model-status` | 기존 CNN 모델 상태 |
-| POST | `/api/retrain` | 기존 CNN 모델 삭제 후 재학습 |
 
-`<psf_id>`는 1–8입니다. `/api/predict/4`는 기본 일괄 API의 F.4 공식과 다른 **CatBoost 경로**입니다. CNN 관리 경로는 CatBoost 모델을 조회·갱신하는 API가 아닙니다.
+`<psf_id>`는 1–8입니다. `/api/predict/4`는 기본 일괄 API의 F.4 공식과 다른 **CatBoost 경로**입니다.
 
 ### 기본 요청과 응답
 
@@ -269,9 +253,9 @@ PSF2·4·8의 CatBoost 경로는 기존 숫자 인코딩과 저장된 GMM을 유
 
 예를 들어 `"F.6.S.10": "F.6.S.10.3"`은 실내 온도 28℃ 이상 범주를 정확히 전달합니다. 기존 `F.6.10` 문항 키와 `F.6.10.3` 선택 코드도 지원합니다. PSF6의 원문에서 강수량 단위가 `mm/s`로 기재된 범주는 학습 토큰의 일치를 위해 그대로 유지합니다. 이는 단위의 물리적 타당성을 검증했다는 뜻이 아닙니다.
 
-`config/mappings.py`의 텍스트 맵과 `code_to_value`는 기존 CNN용으로 유지합니다. HEP 계산식과 기본 F.4의 경과 개월 수 공식은 변경하지 않았습니다. 서버를 재시작한 후 설문을 다시 제출해야 하며, 이전 `sessionStorage` 결과는 자동 재계산되지 않습니다.
+`config/mappings.py`는 PSF 이름·출력 등급과 입력 키 별칭만 정의합니다. 선택 코드의 숫자 변환은 `config/catboost_mappings.py`, PSF6 원문 범주는 `config/environment_schema.py`에서 관리합니다. HEP 계산은 제거했으며 기본 F.4의 경과 개월 수 공식은 유지합니다. 서버를 재시작한 후 설문을 다시 제출해야 하며, 이전 `sessionStorage` 결과는 자동 재계산되지 않습니다.
 
-요청에 없는 PSF는 건너뜁니다. **PSF6은 하위 문항을 임의로 채우지 않습니다.** 다른 CatBoost PSF의 기존 하위 문항 기본값 1 처리는 유지하므로 실제 분석에서는 전체 문항을 명시합니다. 단일 CatBoost API에는 최상위 PSF 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
+요청에 없는 PSF는 건너뜁니다. 부분 요청에서는 개별 결과만 제공하고 `psf_multiplier_product`는 `null`, `missing_psfs`에는 빠진 PSF ID를 반환합니다. 누락된 PSF를 배수 1로 간주하지 않습니다. **PSF6은 하위 문항을 임의로 채우지 않습니다.** 다른 CatBoost PSF의 기존 하위 문항 기본값 1 처리는 유지하므로 실제 분석에서는 전체 문항을 명시합니다. 단일 CatBoost API에는 최상위 PSF 묶음 대신 해당 PSF의 문항 객체를 본문으로 전달합니다.
 
 성공 응답은 `{"success": true, "results": [...]}`이며 단일 예측은 `result` 객체를 사용합니다.
 
@@ -281,7 +265,38 @@ PSF2·4·8의 CatBoost 경로는 기존 숫자 인코딩과 저장된 GMM을 유
 | `predicted_label` | 0부터 시작하는 수준 번호 |
 | `predicted_text` | `F.1.1` 등의 출력 코드 |
 | `probabilities` | 출력 코드별 분류 확률, 기본 F.4는 `null` |
-| `hep_multiplier` | 기본 F.4에서 계산한 배수 |
+| `result.psf_multiplier` | 모든 개별 PSF의 배수. 기본 F.4는 경과 개월 수 공식 값 |
+| `psf_multiplier_product` | 일괄 응답의 8개 PSF 배수 곱. 일부 PSF 누락 시 `null` |
+| `missing_psfs` | 일괄 응답에서 빠진 PSF ID 목록. 전체 응답은 `[]` |
+
+### 배수 API 변경 사항
+
+전체 8개 PSF 요청 시 다음 필드가 추가됩니다. 아래는 배수 필드만 발췌한 예입니다. 실제 `results`에는 기존 예측 코드·수준·분류 확률도 포함됩니다.
+
+```json
+{
+  "success": true,
+  "results": [
+    {"psf_id": "F.1", "psf_multiplier": 1.0},
+    {"psf_id": "F.2", "psf_multiplier": 1.0},
+    {"psf_id": "F.3", "psf_multiplier": 1.0},
+    {"psf_id": "F.4", "psf_multiplier": 4.692},
+    {"psf_id": "F.5", "psf_multiplier": 1.0},
+    {"psf_id": "F.6", "psf_multiplier": 11.576},
+    {"psf_id": "F.7", "psf_multiplier": 1.0},
+    {"psf_id": "F.8", "psf_multiplier": 1.0}
+  ],
+  "psf_multiplier_product": 54.314592,
+  "missing_psfs": []
+}
+```
+
+- 기본 일괄 API와 CatBoost 일괄 API 별칭 모두 전체 곱을 반환합니다. 단일·검증 API는 해당 PSF의 `psf_multiplier`를 반환하며 전체 곱을 만들지 않습니다.
+- F.4의 이전 `hep_multiplier` 필드는 `psf_multiplier`로, 월별 `series.hep_multipliers`는 `series.psf_multipliers`로 변경했습니다. 외부 클라이언트도 함께 수정해야 합니다.
+- F.1 시간별 응답의 `base_prediction`, `current_prediction`, 각 `segments`에 `psf_multiplier`가 추가됩니다.
+- 시간별·월별 API는 변경되는 PSF의 배수를 제공합니다. 그래프는 이 값에 현재 응답의 나머지 7개 배수를 곱합니다. 직종별 기본값이나 HEP 보정은 적용하지 않습니다.
+- 이전 `sessionStorage` 결과에 새 배수 필드가 없으면 재설문을 안내합니다. 서버 재시작과 화면 새로고침 후 설문을 다시 제출합니다.
+- 화면은 서버에서 받은 곱과 8개 개별 배수의 곱이 일치하는지 확인하고 `배`로 표시합니다. 원래 배수 정밀도로 계산하며 표시할 때만 유효숫자를 줄입니다.
 
 ### PowerShell 호출 예시
 
@@ -290,10 +305,10 @@ PSF2·4·8의 CatBoost 경로는 기존 숫자 인코딩과 저장된 GMM을 유
 ```powershell
 $body = @{ training_elapsed_months = 12 } | ConvertTo-Json
 $response = Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/psf4/forecast' -ContentType 'application/json' -Body $body
-$response.series.hep_multipliers.Count  # 601
+$response.series.psf_multipliers.Count  # 601
 ```
 
-응답에는 `success`, `psf_id`, `training_elapsed_months`와 `series`가 있습니다. `series`는 `x_start: 0.0`, `x_end: 60.0`, `x_step: 0.1`, `hep_multipliers`를 포함합니다.
+응답에는 `success`, `psf_id`, `training_elapsed_months`와 `series`가 있습니다. `series`는 `x_start: 0.0`, `x_end: 60.0`, `x_step: 0.1`, `psf_multipliers`를 포함합니다.
 
 시간별 예측 예시는 다음과 같습니다.
 
@@ -325,39 +340,35 @@ Railway_hep/
 ├── app.py                       # Flask 라우트와 개발 서버
 ├── requirements.txt
 ├── input.html                   # 직종·문항 입력
-├── result.html                  # 요약·HEP 계산
-├── detail_result.html           # 상세·HEP 계산·그래프 연결
+├── result.html                  # 요약·PSF 배수 표시
+├── detail_result.html           # 상세·PSF 배수 표시·그래프 연결
 ├── config/                      # 경로, 수준 코드, CatBoost 특성
 ├── preprocessing/
 │   ├── catboost_features.py     # 공통 입력·PSF2/4/8 GMM 특성
 │   └── environment_features.py  # PSF6 원래 14개 범주
 ├── predictors/
 │   ├── catboost.py              # CatBoost 로드·예측
+│   ├── psf_multipliers.py        # PSF별 배수와 전체 곱
 │   ├── psf1_forecast.py          # 시간별 F.1
-│   ├── psf4_formula.py           # F.4 공식·월별 예측
-│   └── cnn.py                   # 기존 CNN 학습·예측
+│   └── psf4_formula.py           # F.4 공식·월별 예측
 ├── models/                      # 현재 CatBoost 8개 + 이전 환경 모델, GMM 3개 + 이전 환경 GMM
 ├── training/train_environment_raw14.py  # PSF6 재학습·선택적 GroupKFold 평가
-├── static/                      # 실제 화면 CSS·forecast.js
+├── static/                      # 화면 CSS·배수 표시·forecast.js
 ├── static copy/                 # 디자인 참고용 CSS
 ├── images/                      # 화면 이미지
 ├── processed_data/              # 포함된 수준 매핑 XLSX 등
 ├── output/                      # 그래프 예시 코드·산출물
 ├── tests/                       # Python 모델/API·Node.js 화면/그래프 테스트
-├── env_preprocess_v1.ipynb       # 환경 전처리 노트북
-└── saved_models/                # 실행 시 생성되는 기존 CNN 모델 경로
+└── env_preprocess_v1.ipynb       # 환경 전처리 노트북
 ```
 
-`HEP 예측 그래프 API 연동 가이드.pdf`는 참고 자료입니다. 문서와 구현이 다르면 현재 API 응답 및 HTML 계산식을 확인합니다.
+`HEP 예측 그래프 API 연동 가이드.pdf`는 참고 자료입니다. 문서와 구현이 다르면 현재 README의 배수 API 계약과 구현을 우선합니다. 이전 PDF의 HEP 계산 설명은 현재 요구사항과 다릅니다.
 
 ## 모델과 데이터 관리
 
 - 현재 CatBoost 경로는 모델 8개와 PSF2·4·8의 GMM 번들 3개를 사용합니다. PSF6은 `models/환경_raw14_catboost.cbm`을 사용합니다. 이전 `환경_catboost.cbm`과 `gmm/psf6_gmm.joblib`은 비교·복구용으로 보존하며 현재 추론에서는 읽지 않습니다. F.4 모델과 GMM은 보조 CatBoost 경로에서 사용합니다.
 - 모델은 최초 사용 시 로드되고 메모리에 캐시됩니다. 교체 후에는 서버를 재시작합니다.
 - CatBoost 특성 이름·순서, 클래스, GMM 번들 구조가 설정과 일치해야 합니다. PSF6은 모델 안의 입력 스키마 버전·해시도 검증하므로 같은 열 이름을 쓰는 숫자 인코딩 모델로 잘못 교체할 수 없습니다.
-- 학습 원본 `4.20 설문조사 결과.txt`는 포함되어 있지 않습니다. 기존 CNN 학습은 `config/paths.py`의 이 경로를 요구합니다.
-- `/api/retrain`은 기존 CNN 파일을 삭제한 뒤 학습하므로 단순 실행 확인용 호출로 사용하지 않습니다.
-- `/api/model-status`는 CNN 상태만 다룹니다. CNN 파일은 있지만 원본 데이터가 없으면 수정 시각 비교에서 오류가 날 수 있습니다.
 - `.gitignore`는 일부 원본 CSV 경로, Python 캐시, 가상환경, 환경 변수 등을 제외합니다. 모든 데이터·학습 산출물을 자동 제외하지는 않으므로 `git status`를 확인합니다.
 
 ### PSF6 원변수 모델 재학습
@@ -370,7 +381,7 @@ python -B training/train_environment_raw14.py --cross-validate
 
 원본 설문과 `CatBoost_Result/`의 로컬 분석 노트북은 이 저장소의 배포 파일에 포함하지 않습니다. 재학습하려면 승인된 원본 자료를 위 경로에 별도로 준비해야 합니다. 포함된 모델을 이용한 추론과 회귀 테스트에는 이 원본 자료가 필요하지 않습니다.
 
-CatBoost 설정은 기존 비교 실험과 같은 500회, depth 6, learning rate 0.05, random seed 42이며 전체 설정·라이브러리 버전·원본 해시를 `models/environment_raw14_metadata.json`에 기록합니다. 모든 14개 특성은 문자열 범주형입니다. 가중치나 분류 임계값은 바꾸지 않습니다. `--cross-validate`를 생략하면 교차검증 없이 최종 모델만 학습하고 보고서를 새로 작성합니다. 다른 위치에서 검토하려면 `--output-dir <경로>`를 사용합니다. `/api/retrain`은 이 모델을 재학습하지 않습니다.
+CatBoost 설정은 기존 비교 실험과 같은 500회, depth 6, learning rate 0.05, random seed 42이며 전체 설정·라이브러리 버전·원본 해시를 `models/environment_raw14_metadata.json`에 기록합니다. 모든 14개 특성은 문자열 범주형입니다. 가중치나 분류 임계값은 바꾸지 않습니다. `--cross-validate`를 생략하면 교차검증 없이 최종 모델만 학습하고 보고서를 새로 작성합니다. 다른 위치에서 검토하려면 `--output-dir <경로>`를 사용합니다. 재학습은 위 CLI 명령으로 수행합니다.
 
 2026-11-18 재현 결과는 다음과 같습니다. 실제 응답은 보통 805건·나쁨 2,145건이고, 응답 2,950건에는 서로 다른 원래 시나리오 2,762개가 있습니다.
 
@@ -388,10 +399,10 @@ CatBoost 설정은 기존 비교 실험과 같은 500회, depth 6, learning rate
 프로젝트 루트에서 실행합니다. npm 패키지 설치는 필요하지 않습니다.
 
 ```bash
-node --test tests/forecast.test.cjs
+node --test tests/*.test.cjs
 ```
 
-월별 601개 값 처리, HEP 계산, 시간 구간, 다른 PSF 유지, 팝업 동작·입력·API 오류 처리 등을 확인합니다. 실제 모델 정확도, 모든 Flask 경로, 브라우저 전체 동작까지 검증하는 테스트는 아닙니다.
+월별 601개 배수, 시간 구간, 다른 PSF 유지, 팝업·입력 오류, 실제 결과 화면 스크립트의 배수 표시와 이전 응답 거부를 확인합니다. M=54→55와 교육 후 44→45개월에서 이전 HEP 역전 현상이 발생하지 않는지도 검증합니다. Python 테스트는 실제 모델을 사용하는 일괄·단일·검증 API, 부분 응답, 예측 API의 배수 필드와 HEP 필드 부재를 확인합니다.
 
 ### 입력 인코딩 회귀 검증
 
@@ -405,7 +416,7 @@ node --test tests/input-encoding.test.cjs
 ### 기능 확인 순서
 
 1. `/`에서 화면·CSS·이미지가 로드되는지 확인합니다.
-2. 전체 설문을 제출하고 8개 PSF 결과와 HEP를 확인합니다.
+2. 전체 설문을 제출하고 8개 PSF 결과와 배수의 곱을 확인합니다.
 3. 상세 화면에서 F.4 배수와 다른 PSF 분류 확률을 확인합니다.
 4. 시간별·월별 팝업을 각각 조회하고 슬라이더·닫기를 확인합니다.
 5. 잘못된 경과 개월 수·근무 시작 시각에 대한 오류를 확인합니다.
@@ -414,7 +425,7 @@ node --test tests/input-encoding.test.cjs
 | --- | --- |
 | 문항·코드 | `input.html`, `static/input-encoding.js`, `config/catboost_mappings.py`, `config/environment_schema.py`, 매핑 XLSX·특성 정의·전처리 |
 | 모델·특성 | `models/`, `config/catboost_config.py`, `preprocessing/` |
-| HEP 계수·배수 | `result.html`, `detail_result.html`, 관련 그래프 테스트 |
+| PSF 배수·곱 | `predictors/psf_multipliers.py`, `static/psf-multipliers.js`, API·화면·그래프 테스트 |
 | 시간·월별 예측 | 두 예측 모듈, `app.py`, `static/forecast.js` |
 | UI | HTML, `static/`, `images/` |
 
@@ -432,7 +443,7 @@ node --test tests/input-encoding.test.cjs
 
 | 증상 | 확인할 사항 |
 | --- | --- |
-| TensorFlow·CatBoost 설치 실패 | Python·OS·패키지 조합 확인. 고정 버전이 없음 |
+| CatBoost 설치 실패 | Python·OS·패키지 조합 확인. 고정 버전이 없음 |
 | 모듈을 찾지 못함 | 설치에 사용한 가상환경 Python으로 실행했는지 확인 |
 | CSS·이미지·API 오류 | HTML 직접 열기 대신 Flask 주소 사용 |
 | 결과 데이터가 없음 | 같은 탭에서 설문 진행, `sessionStorage` 확인 |
@@ -440,7 +451,6 @@ node --test tests/input-encoding.test.cjs
 | 시간별 조회 오류 | ISO 일시, 미래 여부, `base_psf1` 정수 범위 |
 | 모델·특성 불일치 | 파일과 설정·전처리·직렬화 환경 비교 |
 | GMM 버전 경고 | 저장 당시와 현재 scikit-learn 환경 비교 |
-| CNN API 실패 | 학습 원본·CNN 파일 확인. 기본 CatBoost 경로와 구분 |
 | 포트 8000 사용 중 | 기존 서버 확인 또는 Flask CLI로 다른 포트 지정 |
 
 이슈에는 재현 입력, 요청 경로, 오류 메시지, Python·주요 패키지 버전을 기록합니다. 실제 참여자의 개인정보나 학습 원본은 예제 요청에 넣지 않습니다.

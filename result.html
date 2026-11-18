@@ -12,19 +12,21 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.css">
 
-    <title>상태 선택</title>
+    <title>PSF 평가 결과</title>
     <link rel="stylesheet" href="/static/result.css" />
+    <link rel="stylesheet" href="/static/psf-multipliers.css" />
+    <script src="/static/psf-multipliers.js"></script>
 </head>
 
 <body>
 
     <div class="container">
         <div class="title-bar">
-            <p class="page-title">설문결과를 학습한 AI가 예측한 사고 발생 확률</p>
+            <p class="page-title">PSF 평가 결과와 배수의 곱</p>
         </div>
 
         <div class="section-card">
-            <div id="hepResult"></div>
+            <div id="multiplierResult" class="multiplier-summary"></div>
         </div>
         <div class="section-card">
             <div class="psf-grid">
@@ -59,178 +61,6 @@
         };
         const getPredictedDisplayText = (result) => predictionCodeToLabel[result.predicted_text] || result.predicted_text;
 
-        // PSF별 값 매핑 테이블
-        const psfValueMappings = {
-            1: { '보통': 1, '나쁨': 14.45, '매우나쁨': 17.54 },
-            2: { '좋음': 0.492, '보통': 1, '나쁨': 5.654 },
-            3: { '좋음': 0.292, '보통': 1, '나쁨': 8.559 },
-            4: { '좋음': 0.421, '보통': 1, '나쁨': 7.229 },
-            5: { '보통': 1, '나쁨': 9.559 },
-            6: { '보통': 1, '나쁨': 11.576 },
-            7: { '좋음': 0.322, '보통': 1, '나쁨': 12.11 },
-            8: { '보통': 1, '약간 높음': 4.654, '매우 높음': 11.873 }
-        };
-
-        // 직종별 기본 HEP 값
-        const roleHEPValues = {
-            '기관사': { diagnosis: 0.01225, execution: 0.00615 },
-            '관제사': { diagnosis: 0.0055, execution: 0.00352 },
-            '정비사': { diagnosis: 0.00279, execution: 0.00347 },
-            '선로작업자': { diagnosis: 0.01225, execution: 0.0035 }
-        };
-
-        // HEP 계산 함수
-        function calculateHEP(results) {
-            const selectedRole = sessionStorage.getItem('selectedRole') || '기관사';
-            const baseHEP = roleHEPValues[selectedRole] || roleHEPValues['기관사'];
-
-            // 각 PSF의 값을 계산
-            let psfMultiplier = 1;
-            const psfDetails = [];
-
-            results.forEach(result => {
-                const psfId = getNumericPsfId(result.psf_id);
-                const predictedText = getPredictedDisplayText(result);
-                const psfMapping = psfValueMappings[psfId];
-
-                let psfValue = 1; // 기본값
-                if (psfMapping && psfMapping[predictedText] !== undefined) {
-                    psfValue = psfMapping[predictedText];
-                }
-
-                if (typeof result.hep_multiplier === 'number' && Number.isFinite(result.hep_multiplier)) {
-                    psfValue = result.hep_multiplier;
-                }
-                psfMultiplier *= psfValue;
-                psfDetails.push({
-                    psfId: psfId,
-                    label: predictedText,
-                    value: psfValue
-                });
-            });
-
-            // 진단 HEP와 수행 HEP 계산
-            let diagnosisHEP = baseHEP.diagnosis * psfMultiplier;
-            let executionHEP = baseHEP.execution * psfMultiplier;
-            let finalHEP = diagnosisHEP + executionHEP;
-
-            const big_diagnosisHEP = (baseHEP.diagnosis * psfMultiplier) / (baseHEP.diagnosis * (psfMultiplier - 1) + 1)
-            const big_executionHEP = (baseHEP.execution * psfMultiplier) / (baseHEP.execution * (psfMultiplier - 1) + 1)
-            const big_finalHEP = big_diagnosisHEP + big_executionHEP;
-
-
-            if (finalHEP > 1) {
-                finalHEP = big_finalHEP;
-                diagnosisHEP = big_diagnosisHEP;
-                executionHEP = big_executionHEP;
-            }
-            console.log(big_diagnosisHEP)
-            console.log(big_executionHEP)
-            console.log(finalHEP)
-
-            return {
-                role: selectedRole,
-                baseDiagnosis: baseHEP.diagnosis,
-                baseExecution: baseHEP.execution,
-                psfMultiplier: psfMultiplier,
-                diagnosisHEP: diagnosisHEP,
-                executionHEP: executionHEP,
-                finalHEP: finalHEP,
-                psfDetails: psfDetails
-            };
-        }
-
-        // HEP 결과 표시 함수
-        function displayHEPResults(hepData) {
-            const hepElement = document.getElementById('hepResult');
-
-            const final = Number(hepData.finalHEP);
-            const minHEP = 0;
-            const maxHEP = 2;
-            const goodMax = 1;
-            const normalMax = 1.995;
-            const safeFinal = Number.isFinite(final) ? final : 0;
-            const clampedFinal = Math.max(minHEP, Math.min(safeFinal, maxHEP));
-            const segmentPercent = 100 / 3;
-            const segGood = segmentPercent;
-            const segNormal = segmentPercent;
-            const segBad = segmentPercent;
-            let fillPercent = 0;
-
-            if (clampedFinal <= goodMax) {
-                fillPercent = ((clampedFinal - minHEP) / (goodMax - minHEP)) * segGood;
-            } else if (clampedFinal <= normalMax) {
-                fillPercent = segGood + ((clampedFinal - goodMax) / (normalMax - goodMax)) * segNormal;
-            } else {
-                fillPercent = segGood + segNormal + ((clampedFinal - normalMax) / (maxHEP - normalMax)) * segBad;
-            }
-
-            let gradeText = '';
-            let gradeClass = '';
-
-            if (final >= 0 && final < 1) {
-                gradeText = '좋음';
-                gradeClass = 'hep-good';
-            } else if (final >= 1 && final < 1.995) {
-                gradeText = '보통';
-                gradeClass = 'hep-normal';
-            } else if (final >= 1.995 && final <= 2) {
-                gradeText = '나쁨';
-                gradeClass = 'hep-bad';
-            } else {
-                // 범위 밖 예외 처리(원하면 문구 변경)
-                gradeText = '범위초과';
-                gradeClass = 'hep-bad';
-            }
-
-            hepElement.innerHTML = `
-  <div class="hep-wrap">
-    <br>
-    <h3 class="result_h3">사고발생 확률 진단 결과</h3>
-    <span class="hep-badge ${gradeClass}">${gradeText}</span>
-    <br>
-    <div class="hep-level-bar">
-        
-      <div class="hep-level-track" style="--hep-marker: 0%;">
-        <div class="hep-marker ${gradeClass}">
-          <span class="hep-marker-label"></span>
-        </div>
-      </div>
-
-      <div class="hep-level-labels">
-        <span class="hep-label">좋음</span>
-        <span class="hep-label">보통</span>
-        <span class="hep-label">나쁨</span>
-      </div>
-    </div>
-  </div>
-`;
-
-            const bar = hepElement.querySelector('.hep-level-bar');
-            if (bar) {
-                bar.style.setProperty('--seg-good', `${segGood.toFixed(4)}%`);
-                bar.style.setProperty('--seg-normal', `${segNormal.toFixed(4)}%`);
-                bar.style.setProperty('--seg-bad', `${segBad.toFixed(4)}%`);
-                bar.style.setProperty('--seg-good-end', `${segGood.toFixed(4)}%`);
-                bar.style.setProperty('--seg-normal-end', `${(segGood + segNormal).toFixed(4)}%`);
-            }
-
-            const track = hepElement.querySelector('.hep-level-track');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    track.style.setProperty('--hep-marker', `${fillPercent.toFixed(2)}%`);
-                });
-            });
-
-            const markerLabel = hepElement.querySelector('.hep-marker-label');
-            if (markerLabel) {
-                const formatted = Number.isFinite(final) ? final.toLocaleString() : '0';
-                markerLabel.textContent = `Final HEP ${formatted}`;
-            }
-
-        }
-
-
         function getChipClass(label) {
             if (label === '좋음') return 'chip-good';
             else if (label === '보통') return 'chip-common'
@@ -240,7 +70,14 @@
         }
         if (resultsData) {
             let data;
-            try { data = JSON.parse(resultsData); } catch { data = { success: false }; }
+            let responseError = '분석 결과가 없습니다.';
+            try {
+                data = JSON.parse(resultsData);
+                PsfMultipliers.validateResponse(data);
+            } catch (error) {
+                data = { success: false };
+                responseError = error.message || '결과를 읽을 수 없습니다. 설문을 다시 제출해 주세요.';
+            }
 
             if (data && data.success && Array.isArray(data.results) && data.results.length > 0) {
 
@@ -348,15 +185,19 @@
                     `;
                 }
 
-                // HEP 계산 및 표시
-                const hepData = calculateHEP(data.results);
-                displayHEPResults(hepData);
+                PsfMultipliers.renderSummary(document.getElementById('multiplierResult'), data);
+                data.results.forEach(result => {
+                    const factor = document.createElement('p');
+                    factor.className = 'psf-factor';
+                    factor.textContent = `${PsfMultipliers.formatMultiplier(result.psf_multiplier)}배`;
+                    document.getElementById(`psf${getNumericPsfId(result.psf_id)}Result`).append(factor);
+                });
 
             } else {
-                document.body.innerHTML += '<p>분석 결과가 없습니다.</p>';
+                document.getElementById('multiplierResult').textContent = responseError;
             }
         } else {
-            document.body.innerHTML += '<p>데이터가 없습니다. 설문조사를 먼저 완료해주세요.</p>';
+            document.getElementById('multiplierResult').textContent = '데이터가 없습니다. 설문조사를 먼저 완료해주세요.';
         }
     </script>
 </body>

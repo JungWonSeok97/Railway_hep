@@ -3,8 +3,7 @@
 Source: processed_data/subpsf_level_mapping.xlsx (Sub-PSF LV. -> level).
 Tuple positions are stable selection-code suffixes, NOT display order or risk
 rank. In particular, binary values are 0/1 and indoor temperature/humidity
-encode both extremes as 1. Keep the existing CNN encoding in mappings.py
-separate: those models have their own training history.
+encode both extremes as 1.
 
 The active PSF6 model uses environment_schema.py raw categories instead.
 Its old numbers here are only for unambiguous backwards-compatible inputs

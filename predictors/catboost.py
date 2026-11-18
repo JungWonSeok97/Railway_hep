@@ -6,9 +6,10 @@ import pandas as pd
 from catboost import CatBoostClassifier
 
 from config.paths import CATBOOST_MODEL_DIR
-from config.mappings import mappings
+from config.mappings import PSF_LABELS, PSF_NAMES
 from config.catboost_config import CATBOOST_CONFIG
 from preprocessing.catboost_features import build_catboost_features
+from predictors.psf_multipliers import multiplier_for_prediction
 
 
 # 로드된 모델 캐시
@@ -137,9 +138,7 @@ def predict_psf_catboost(
         for cls in model.classes_
     ]
 
-    label_map = mappings[
-        psf_id
-    ]["label_map"]
+    label_map = PSF_LABELS[psf_id]
 
     probabilities = {}
     canonical_probabilities = []
@@ -201,14 +200,9 @@ def predict_psf_catboost(
         "psf_id": f"F.{psf_id}",
         "predicted_label": predicted_label,
         "predicted_text": predicted_text,
+        "psf_multiplier": multiplier_for_prediction(psf_id, predicted_text),
         "probabilities": probabilities,
     }
-
-
-from config.mappings import (
-    mappings,
-    PSF_NAMES,
-)
 
 
 def predict_psf_catboost_test(
@@ -268,9 +262,7 @@ def predict_psf_catboost_test(
         for cls in model.classes_
     ]
 
-    label_map = mappings[
-        psf_id
-    ]["label_map"]
+    label_map = PSF_LABELS[psf_id]
 
     # ----------------------------------------
     # 사람이 보기 쉬운 확률
@@ -338,6 +330,7 @@ def predict_psf_catboost_test(
         "psf": PSF_NAMES[psf_id],
 
         "prediction": predicted_korean,
+        "psf_multiplier": multiplier_for_prediction(psf_id, f"F.{psf_id}.{predicted_label + 1}"),
 
         "probabilities": probabilities,
 

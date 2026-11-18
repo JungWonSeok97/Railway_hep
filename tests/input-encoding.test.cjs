@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const { getConditionCode } = require('../static/input-encoding.js');
+const PsfMultipliers = require('../static/psf-multipliers.js');
 
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'input.html'), 'utf8');
@@ -109,7 +110,7 @@ function submissionFixture() {
   const messages = [];
   const stored = {};
   const sandbox = vm.createContext({
-    allSelects: groups.flat(), PsfInputEncoding: { getConditionCode },
+    allSelects: groups.flat(), PsfInputEncoding: { getConditionCode }, PsfMultipliers,
     document: {
       getElementById: id => nodes[id],
       querySelector: selector => selector === '.role-btn.active' ? {} : null,
@@ -124,7 +125,7 @@ function submissionFixture() {
     window: { location: {} },
     fetch: async (url, request) => {
       calls.push({ url, method: request.method, data: JSON.parse(request.body) });
-      return { ok: true, json: async () => ({ success: true, results: Array.from({ length: 8 }, (_, i) => ({ psf_id: `F.${i + 1}` })) }) };
+      return { ok: true, json: async () => ({ success: true, psf_multiplier_product: 1, results: Array.from({ length: 8 }, (_, i) => ({ psf_id: `F.${i + 1}`, psf_multiplier: 1 })) }) };
     },
   });
   const begin = html.indexOf('function submitSurvey()');

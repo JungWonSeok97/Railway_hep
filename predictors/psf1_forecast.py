@@ -1,3 +1,5 @@
+from predictors.psf_multipliers import multiplier_for_prediction
+
 from datetime import (
     datetime,
     time,
@@ -28,6 +30,7 @@ WORK_TIME_BOUNDARIES = (
 def _prediction(predicted_label):
     return {
         "predicted_label": predicted_label,
+        "psf_multiplier": multiplier_for_prediction(1, PSF1_PREDICTED_TEXT[predicted_label]),
         "predicted_text": (
             PSF1_PREDICTED_TEXT[predicted_label]
         ),
@@ -197,7 +200,7 @@ def _build_segments(
                 if end_elapsed_hours is not None
                 else None
             ),
-            "predicted_label": predicted_label,
+            **_prediction(predicted_label),
             "start_at": start_at.isoformat(),
             "end_at": (
                 end_at.isoformat()

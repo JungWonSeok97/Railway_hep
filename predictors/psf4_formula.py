@@ -8,7 +8,7 @@ PSF4_PREDICTED_TEXT = {
 }
 
 
-def _calculate_hep_multiplier(
+def _calculate_psf_multiplier(
     training_elapsed_months,
 ):
     x = float(training_elapsed_months)
@@ -85,13 +85,13 @@ def predict_psf4_formula(psf_input):
         )
     )
 
-    hep_multiplier = _calculate_hep_multiplier(
+    psf_multiplier = _calculate_psf_multiplier(
         training_elapsed_months
     )
 
-    if hep_multiplier < 1:
+    if psf_multiplier < 1:
         predicted_label = 0
-    elif hep_multiplier < 2:
+    elif psf_multiplier < 2:
         predicted_label = 1
     else:
         predicted_label = 2
@@ -103,8 +103,8 @@ def predict_psf4_formula(psf_input):
         ),
         "probabilities": None,
         "psf_id": "F.4",
-        "hep_multiplier": round(
-            hep_multiplier,
+        "psf_multiplier": round(
+            psf_multiplier,
             3,
         ),
     }
@@ -119,7 +119,7 @@ def build_psf4_forecast(
         )
     )
 
-    hep_multipliers = []
+    psf_multipliers = []
 
     for step_index in range(601):
         future_months = step_index / 10
@@ -127,9 +127,9 @@ def build_psf4_forecast(
             training_elapsed_months
             + future_months
         )
-        hep_multipliers.append(
+        psf_multipliers.append(
             round(
-                _calculate_hep_multiplier(
+                _calculate_psf_multiplier(
                     formula_months
                 ),
                 3,
@@ -154,6 +154,6 @@ def build_psf4_forecast(
             "x_start": 0.0,
             "x_end": 60.0,
             "x_step": 0.1,
-            "hep_multipliers": hep_multipliers,
+            "psf_multipliers": psf_multipliers,
         },
     }
