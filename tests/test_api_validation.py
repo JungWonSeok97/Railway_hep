@@ -40,6 +40,24 @@ class ApiValidationTests(unittest.TestCase):
         self.enterContext(warnings.catch_warnings())
         warnings.simplefilter("ignore", UserWarning)
 
+    def test_sleep_codes_reach_saved_model_with_training_workbook_values(self):
+        from predictors.catboost import load_catboost_model
+        import pandas as pd
+
+        model = load_catboost_model(1)
+        for suffix, expected in ((3, 0), (2, 1), (1, 2)):
+            body = {**scenario(1), "F.1.S.3": f"F.1.S.3.{suffix}"}
+            response = self.client.post("/api/test/predict/1", json=body)
+            self.assertEqual(response.status_code, 200)
+            data = response.get_json()
+            result = data["result"]
+            self.assertEqual(result["model_input"]["수면시간"], expected)
+            # Compare the API against direct inference using the workbook encoding.
+            values = [["0", str(expected), "0", "0", "0"]]
+            expected_probs = model.predict_proba(pd.DataFrame(values, columns=model.feature_names_))[0]
+            for label, probability in zip(model.classes_, expected_probs):
+                self.assertEqual(result["probabilities"][str(label)], f"{probability * 100:.2f}%")
+
     def assert_error(self, response, status=400, contains=None):
         self.assertEqual(response.status_code, status, response.get_data(as_text=True))
         body = response.get_json()

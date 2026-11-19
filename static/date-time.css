@@ -1,0 +1,12 @@
+.date-time-picker { width: 100%; margin-top: 14px; }
+.date-time-fields { display: grid; grid-template-columns: minmax(160px, 1.7fr) repeat(3, minmax(76px, 1fr)); gap: 10px; }
+.date-time-fields label { display: flex; flex-direction: column; gap: 7px; min-width: 0; color: var(--muted, #637482); font-size: 13px; font-weight: 600; }
+.date-time-fields input, .date-time-fields select { width: 100%; min-width: 0; min-height: 46px; margin: 0; padding: 10px 12px; border: 1px solid var(--border, #dce4e7); border-radius: 8px; background: #fff; color: var(--ink, #172c3c); font: inherit; font-size: 15px; }
+.date-time-fields :is(input, select):focus-visible { outline: 3px solid #9ed7cd; outline-offset: 2px; border-color: #116963; }
+.date-time-actions { display: flex; gap: 8px; margin-top: 10px; }
+.date-time-picker .date-time-actions button { width: auto; min-height: 36px; padding: 7px 12px; font: inherit; font-size: 13px; border: 1px solid var(--border, #dce4e7); border-radius: 6px; color: var(--primary, #116963); background: #fff; cursor: pointer; }
+.date-time-actions button:hover { background: #eaf5f2; }
+@media (max-width: 600px) {
+  .date-time-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .date-time-fields label:first-child { grid-column: 1 / -1; }
+}

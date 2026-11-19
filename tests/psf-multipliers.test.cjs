@@ -76,13 +76,14 @@ test('actual summary and detail page scripts display the same multiplier without
     for (const role of ['기관사', '관제사', '정비사', '선로작업자']) {
       const page = pageFixture(filename, response(), role);
       const text = page.nodes.multiplierResult.children.map(node => node.textContent).join(' ');
-      assert.match(text, /55배/);
+      assert.equal(page.nodes.multiplierResult.children[0].textContent, 'PSF 가중치의 곱');
+      assert.equal(page.nodes.multiplierResult.children[1].textContent, '55');
       assert.doesNotMatch(text, /%/);
       assert.equal(typeof page.context.calculateHEP, 'undefined');
       assert.doesNotMatch(page.html, /diagnosisHEP|executionHEP|finalHEP|roleHEPValues|hep_multiplier/);
       if (filename === 'detail_result.html') {
         const factor = page.nodes.resultsList.children[3].children[0].children[0];
-        assert.equal(factor.textContent, 'PSF 배수: 55배');
+        assert.equal(factor.textContent, 'PSF 가중치: 55');
         const classificationCard = page.nodes.resultsList.children[0].children[0].innerHTML;
         assert.match(classificationCard, /70\.0%/); // Model class probabilities still use percent.
       }

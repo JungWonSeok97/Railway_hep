@@ -174,3 +174,35 @@ test('the actual submit handler blocks requests when an option code is absent or
     assert.deepEqual(fixture.stored, {});
   }
 });
+
+test('example clicks select long/middle/short sleep and submit their stable codes', async () => {
+  for (const [kind, code, room] of [['good', 'F.1.S.3.3', 'room1'], ['common', 'F.1.S.3.2', 'room2'], ['bad', 'F.1.S.3.1', 'room3']]) {
+    const fixture = submissionFixture();
+    const sleep = fixture.groups[0][2];
+    // A select changes selectedOptions when its value changes in the browser.
+    Object.defineProperty(sleep, 'value', {
+      get: () => sleep.selectedOptions[0]?.value || '',
+      set: value => { sleep.selectedOptions = sleep.options.filter(item => item.value === value); },
+    });
+    sleep.dispatchEvent = () => {};
+    const handlers = {};
+    fixture.sandbox.Event = class {};
+    fixture.sandbox.document.querySelector = selector => {
+      if (selector === '#sleeptimeSelect') return sleep;
+      if (selector === '.role-btn.active') return {};
+      if (/^\.(good|common|bad)-scenario$/.test(selector)) return { addEventListener: (_, callback) => { handlers[selector] = callback; } };
+      return null;
+    };
+    const helperStart = html.indexOf('function setSelectValue(');
+    vm.runInContext(html.slice(helperStart, html.indexOf('const scenarioOverlay', helperStart)), fixture.sandbox);
+    const presetStart = html.indexOf('document.querySelector(".bad-scenario").addEventListener');
+    vm.runInContext(html.slice(presetStart, html.indexOf('</script>', presetStart)), fixture.sandbox);
+    handlers[`.${kind}-scenario`]();
+    assert.equal(sleep.value, room);
+    fixture.nodes.workStartedAt.value = '2026-01-01T00:05';
+    fixture.sandbox.submitSurvey();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(fixture.calls[0].data['F.1']['F.1.S.3'], code);
+    assert.equal(fixture.stored.psfResults.forecast_inputs.work_started_at, '2026-01-01T00:05+09:00');
+  }
+});

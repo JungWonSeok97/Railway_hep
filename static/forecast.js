@@ -7,7 +7,7 @@
 
   function multiplierProduct(results, calculate) {
     const value = calculate(results);
-    if (!Number.isFinite(value) || value <= 0) throw new Error('PSF 배수의 곱이 올바르지 않습니다.');
+    if (!Number.isFinite(value) || value <= 0) throw new Error('PSF 가중치의 곱이 올바르지 않습니다.');
     return value;
   }
 
@@ -18,7 +18,7 @@
       throw new Error('월별 그래프 데이터 형식이 올바르지 않습니다.');
     }
     return series.psf_multipliers.map((multiplier, index) => {
-      if (!Number.isFinite(multiplier) || multiplier <= 0) throw new Error('교육·훈련 배수 데이터가 올바르지 않습니다.');
+      if (!Number.isFinite(multiplier) || multiplier <= 0) throw new Error('교육·훈련 가중치 데이터가 올바르지 않습니다.');
       return {
         x: Number((series.x_start + index * series.x_step).toFixed(1)),
         y: multiplierProduct(withPrediction(results, 'F.4', { psf_multiplier: multiplier }), calculate),
@@ -85,7 +85,7 @@
     const monthly = kind === 'monthly';
     const limit = monthly ? 60 : 24;
     const unit = monthly ? '개월' : '시간';
-    const title = monthly ? '향후 60개월 PSF 배수 변화' : '조회 시점부터 24시간 PSF 배수 변화';
+    const title = monthly ? '향후 60개월 PSF 가중치 변화' : '조회 시점부터 24시간 PSF 가중치 변화';
     const values = points.map(point => point.y);
     const maxY = Math.max(...values) * 1.12 || 1;
     const plot = { left: 90, top: 38, width: 620, height: 230 };
@@ -93,7 +93,7 @@
     const y = value => plot.top + plot.height - value / maxY * plot.height;
     const svg = svgNode('svg', { viewBox: '0 0 750 335', role: 'img', 'aria-label': title, class: 'forecast-svg' });
     svg.append(svgNode('title', {}, title));
-    svg.append(svgNode('desc', {}, '가로축은 조회 시점부터 경과 시간, 세로축은 PSF 배수의 곱(배)입니다. 아래 슬라이더로 수치를 확인할 수 있습니다.'));
+    svg.append(svgNode('desc', {}, '가로축은 조회 시점부터 경과 시간, 세로축은 PSF 가중치의 곱입니다. 아래 슬라이더로 수치를 확인할 수 있습니다.'));
     for (let i = 0; i <= 4; i++) {
       const value = maxY * i / 4;
       svg.append(svgNode('line', { x1: plot.left, x2: x(limit), y1: y(value), y2: y(value), class: 'forecast-grid-line' }));
@@ -103,14 +103,14 @@
       const value = limit * i / 6;
       svg.append(svgNode('text', { x: x(value), y: 292, 'text-anchor': 'middle' }, value));
     }
-    svg.append(svgNode('text', { x: plot.left, y: 20 }, 'PSF 배수의 곱 (배)'));
+    svg.append(svgNode('text', { x: plot.left, y: 20 }, 'PSF 가중치의 곱'));
     svg.append(svgNode('text', { x: 400, y: 322, 'text-anchor': 'middle' }, `조회 시점부터 경과 ${unit}`));
     svg.append(svgNode('polyline', {
       points: points.map(point => `${x(point.x)},${y(point.y)}`).join(' '),
-      fill: 'none', stroke: monthly ? '#0f3d91' : '#0b6a88', 'stroke-width': 3,
+      fill: 'none', stroke: monthly ? '#116963' : '#3f718d', 'stroke-width': 3,
       'vector-effect': 'non-scaling-stroke',
     }));
-    const marker = svgNode('circle', { r: 5, fill: '#fff', stroke: '#0f3d91', 'stroke-width': 3 });
+    const marker = svgNode('circle', { r: 5, fill: '#fff', stroke: monthly ? '#116963' : '#3f718d', 'stroke-width': 3 });
     svg.append(marker);
     const scroller = node('div', undefined, 'forecast-chart-scroll');
     scroller.append(svg);
@@ -134,8 +134,8 @@
         for (const candidate of points) if (candidate.x <= selectedX) point = candidate;
       }
       marker.setAttribute('cx', x(selectedX)); marker.setAttribute('cy', y(point.y));
-      const extra = monthly ? `교육·훈련 ${number(point.multiplier)}배` : `작업부하 ${labels[point.level]}`;
-      output.textContent = `${number(selectedX)}${unit} 후 · PSF 배수의 곱 ${number(point.y)}배 · ${extra}`;
+      const extra = monthly ? `교육·훈련 ${number(point.multiplier)}` : `작업부하 ${labels[point.level]}`;
+      output.textContent = `${number(selectedX)}${unit} 후 · PSF 가중치의 곱 ${number(point.y)} · ${extra}`;
       slider.setAttribute('aria-valuetext', output.textContent);
     }
     slider.addEventListener('input', inspect);
@@ -174,9 +174,11 @@
     const results = data.results;
     const monthsInput = document.getElementById('forecastMonths');
     const workInput = document.getElementById('forecastWorkStartedAt');
+    const timePicker = typeof PsfDateTime !== 'undefined' ? PsfDateTime.init(workInput) : null;
     const saved = data.forecast_inputs || {};
     if (Number.isFinite(saved.training_elapsed_months) && saved.training_elapsed_months >= 0) monthsInput.value = saved.training_elapsed_months;
     if (saved.work_started_at) workInput.value = kstValue(saved.work_started_at);
+    if (timePicker) timePicker.setValue(workInput.value);
     const basePsf1 = results.find(result => result.psf_id === 'F.1').predicted_label;
     const opened = new Set();
 
@@ -197,6 +199,12 @@
         }
         payload = { training_elapsed_months: months };
       } else {
+        if (timePicker && timePicker.getError()) {
+          status.textContent = timePicker.getError();
+          status.classList.add('forecast-error');
+          timePicker.focus();
+          return;
+        }
         const start = workInput.value ? `${workInput.value}+09:00` : '';
         if (!start || !Number.isFinite(Date.parse(start)) || Date.parse(start) > Date.now()) {
           status.textContent = '현재 시각 이전의 근무 시작 일시를 입력하고 시간별 그래프 조회를 눌러 주세요.';
@@ -204,7 +212,7 @@
         }
         payload = { work_started_at: start, base_psf1: basePsf1 };
       }
-      const controls = [...form.querySelectorAll('input, button')];
+      const controls = [...form.querySelectorAll('input, select, button')];
       form.dataset.busy = 'true'; controls.forEach(control => { control.disabled = true; });
       target.setAttribute('aria-busy', 'true');
       const loadingImage = node('img'); loadingImage.src = '/images/loading.gif'; loadingImage.alt = '';

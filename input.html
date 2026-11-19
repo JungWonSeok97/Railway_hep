@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>PSF 설문조사</title>
+  <title>작업조건 평가 · 철도 PSF</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,30 +14,44 @@
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/variable/pretendardvariable.css" />
 
   <link rel="stylesheet" href="/static/input.css" />
+  <link rel="stylesheet" href="/static/date-time.css">
 </head>
 
 <body>
 
+  <a class="skip-link" href="#surveyContent">설문 입력으로 바로가기</a>
   <div id="customModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box">
+    <div class="modal-box" role="alertdialog" aria-modal="true" aria-labelledby="modalMessage">
       <p id="modalMessage">메시지</p>
       <button onclick="closeModal()">확인</button>
     </div>
   </div>
 
-  <div class="container">
-    <div class="header">
-      <div class="title-bar">
-        <p class="title-type">사고 발생 확률 예측 설문조사</p>
-        <button type="button" class="scenario-trigger">시나리오 선택</button>
-      </div>
-
-      <div class="progress-fill" id="progressFill"></div>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <a class="brand" href="/" aria-label="철도 PSF 작업조건 평가 홈"><span class="brand-mark" aria-hidden="true">R</span><span>철도 PSF <span class="brand-divider">/</span> <span class="brand-caption">작업조건 평가</span></span></a>
+      <span class="header-tag">철도종사자 인적요인 평가</span>
     </div>
+  </header>
+  <div class="container">
+    <header class="page-header">
+      <div><p class="eyebrow">WORK CONDITIONS</p><h1>지금의 작업조건을 알려주세요.</h1><p class="page-description">8개 영역을 차례로 살펴보고, 현재 상황에 가장 가까운 조건을 선택해주세요.</p></div>
+      <div class="header-actions"><button type="button" class="scenario-trigger secondary-button">예시 불러오기</button><button type="button" id="resetSurvey" class="text-button">새로 작성</button></div>
+    </header>
+    <div id="draftNotice" class="draft-notice" role="status" hidden><span>이 탭에서 작성하던 응답을 불러왔습니다.</span><button type="button" id="dismissDraft" aria-label="임시 저장 안내 닫기">닫기</button></div>
+    <div class="survey-layout">
+      <aside class="survey-sidebar" aria-label="설문 진행 현황">
+        <div class="progress-summary"><p class="sidebar-label">전체 입력 현황</p><div class="progress-numbers"><strong id="progressPercent">0<span>%</span></strong><span id="progressCount">0 / 59 완료</span></div><div class="progress-track" id="surveyProgress" role="progressbar" aria-label="필수 항목 입력률" aria-valuemin="0" aria-valuemax="59" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div><p class="progress-caption">설문 57개 · 직종 · 교육 경과 개월</p></div>
+        <nav id="sectionNav" class="section-nav" aria-label="평가 영역"></nav>
+        <button type="button" id="findUnanswered" class="missing-button">미응답 항목으로 이동 <span aria-hidden="true">↗</span></button>
+        <p id="saveStatus" class="save-status">입력 내용은 이 탭에서 임시 저장됩니다.</p>
+      </aside>
+      <main id="surveyContent" class="survey-content" tabindex="-1">
+        <div id="validationSummary" class="validation-summary" role="alert" hidden></div>
     <!-- 기관사, 관제사, 작업자 -->
-    <div class="question-group">
-      <div class="role-selection">
-        <p class="role-title">직종을 선택해주세요.</p>
+    <div class="question-group role-card" id="roleGroup">
+      <div class="role-selection" role="group" aria-labelledby="roleTitle">
+        <div><p class="role-title" id="roleTitle">어떤 직종에 종사하시나요? <span class="required-label">필수</span></p><p class="role-description">현재 수행하는 직무를 선택해주세요.</p></div>
         <div class="role-buttons">
           <button type="button" class="role-btn" data-role="기관사" onclick="selectRole(this)">기관사</button>
           <button type="button" class="role-btn" data-role="관제사" onclick="selectRole(this)">관제사</button>
@@ -46,12 +60,22 @@
         </div>
       </div>
     </div>
+    <div class="section-intro"><div><p id="stepLabel" class="eyebrow">영역 01 / 08</p><h2 id="sectionTitle" tabindex="-1">작업부하</h2><p id="sectionDescription">근무시간과 휴식, 작업 여유를 살펴봅니다.</p></div><span id="sectionCount" class="section-count">0 / 5 완료</span></div>
     <!-- PSF 1 -->
     <div class="house">
       <div class="house-title">1. 귀하가 느끼는 작업 부하 수준은 어느 정도에 해당합니까?</div>
       <div class="question-group">
-        <label for="workStartedAt" class="label-text">현재 근무 시작 일시 (한국시간)</label>
-        <input type="datetime-local" id="workStartedAt">
+        <label for="workStartedAtDate" id="workStartedAtLabel" class="label-text">현재 근무 시작 일시 <span class="optional-label">선택 · 한국시간</span></label>
+        <input id="workStartedAt" type="hidden">
+        <div class="date-time-picker" data-date-time="workStartedAt" data-required="false" role="group" aria-labelledby="workStartedAtLabel">
+          <div class="date-time-fields">
+            <label for="workStartedAtDate">날짜<input id="workStartedAtDate" type="date" data-part="date"></label>
+            <label for="workStartedAtPeriod">오전·오후<select id="workStartedAtPeriod" data-part="period"><option value="">선택</option><option value="AM">오전</option><option value="PM">오후</option></select></label>
+            <label for="workStartedAtHour">시<select id="workStartedAtHour" data-part="hour"><option value="">선택</option></select></label>
+            <label for="workStartedAtMinute">분<select id="workStartedAtMinute" data-part="minute"><option value="">선택</option></select></label>
+          </div>
+          <div class="date-time-actions"><button type="button" data-action="today">오늘 날짜</button><button type="button" data-action="clear">입력 지우기</button></div>
+        </div>
         <p class="submit-hint">시간별 예측 그래프에 사용합니다. 상세 결과 화면에서 입력해도 됩니다.</p>
       </div>
 
@@ -285,7 +309,7 @@
     <div class="house">
       <div class="house-title">4. 귀하가 느끼는 교육/훈련 성과 및 수준은 어느 정도입니까?</div>
       <div class="question-group">
-        <label for="trainingElapsedMonths" class="label-text">마지막 직무 교육 후 경과 개월 수</label>
+        <label for="trainingElapsedMonths" class="label-text">마지막 직무 교육 후 경과 개월 수 <span class="required-label">필수</span></label>
         <input type="number" id="trainingElapsedMonths" min="0" step="any" required placeholder="예: 6">
         <p class="submit-hint">교육·훈련 예측에는 이 경과 개월 수가 사용됩니다.</p>
       </div>
@@ -775,23 +799,35 @@
 
     <!-- 제출 버튼 영역 -->
     <div class="submit-section">
+      <div class="footer-status"><span id="stepPosition">1 / 8 영역</span><span id="stepRemaining">이 영역에 5개 항목이 남아 있습니다.</span></div>
+      <div class="footer-actions"><button type="button" id="previousSection" class="secondary-button">이전</button><button type="button" id="nextSection" class="primary-button">다음 영역 <span aria-hidden="true">→</span></button>
       <button type="button" id="submitBtn" class="submit-btn" onclick="submitSurvey()">
-        분석하기
+        결과 확인하기
       </button>
-      <p class="submit-hint">모든 항목을 선택한 후 버튼을 클릭하세요</p>
+      </div>
     </div>
-
+      </main>
+    </div>
+    <p id="surveyAnnouncement" class="visually-hidden" role="status" aria-live="polite"></p>
   </div> <!-- container 닫기 -->
 
   <div class="scenario-overlay" id="scenarioOverlay" aria-hidden="true">
-    <div class="scenario-panel" role="dialog" aria-modal="true">
-      <p class="scenario-title">시나리오 선택</p>
+    <div class="scenario-panel" role="dialog" aria-modal="true" aria-labelledby="scenarioTitle" aria-describedby="scenarioDescription">
+      <p class="scenario-title" id="scenarioTitle">예시 응답 불러오기</p>
+      <p id="scenarioDescription" class="dialog-description">준비된 예시로 57개 설문 응답을 채웁니다. 기존 응답을 덮어쓰며, 예시의 이름이 예측 결과를 뜻하지는 않습니다. 직종과 교육 경과 개월 수는 직접 입력해주세요.</p>
       <button type="button" class="scenario-close">닫기</button>
       <div class="scenario-actions">
         <button type="button" class="bad-scenario">나쁨 시나리오</button>
         <button type="button" class="common-scenario">보통 시나리오</button>
         <button type="button" class="good-scenario">좋음 시나리오</button>
       </div>
+    </div>
+  </div>
+
+  <div id="resetOverlay" class="modal-overlay" style="display: none;">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="resetTitle" aria-describedby="resetDescription">
+      <h2 id="resetTitle">새로 작성할까요?</h2><p id="resetDescription">이 탭에 저장된 응답과 직종, 시간 입력을 모두 초기화합니다.</p>
+      <div class="dialog-actions"><button type="button" id="cancelReset" class="secondary-button">계속 작성</button><button type="button" id="confirmReset" class="primary-button">초기화하기</button></div>
     </div>
   </div>
 
@@ -810,6 +846,10 @@
     const progressFill = document.getElementById('progressFill');
 
     function updateProgress() {
+      if (window.PsfSurvey) {
+        window.PsfSurvey.refresh();
+        return;
+      }
       const total = allSelects.length;
       const answered = Array.from(allSelects).filter(s => s.value !== '').length;
       const percentage = (answered / total) * 100;
@@ -839,16 +879,25 @@
       const radioWrap = document.createElement('div');
       radioWrap.className = 'radio-group';
       const name = select.id || select.name || `select-${Math.random().toString(36).slice(2)}`;
+      if (labelText) {
+        labelText.id = `${name}-label`;
+        radioWrap.setAttribute('role', 'radiogroup');
+        radioWrap.setAttribute('aria-labelledby', labelText.id);
+        radioWrap.setAttribute('aria-required', 'true');
+      }
 
-      options.forEach(opt => {
+      options.forEach((opt, index) => {
         const label = document.createElement('label');
         const input = document.createElement('input');
         input.type = 'radio';
         input.name = name;
+        input.id = `${name}-option-${index}`;
         input.value = opt.value;
         if (opt.selected) input.checked = true;
         label.appendChild(input);
-        label.append(opt.textContent);
+        const text = document.createElement('span');
+        text.textContent = opt.textContent.trim();
+        label.appendChild(text);
         radioWrap.appendChild(label);
       });
 
@@ -877,6 +926,7 @@
     function submitSurvey() {
       const submitBtn = document.getElementById('submitBtn');
       if (submitBtn.disabled) return;
+      if (window.PsfSurvey && !window.PsfSurvey.validate()) return;
       if (!document.querySelector('.role-btn.active')) {
         showModal('직종을 선택해 주세요.');
         return;
@@ -1021,6 +1071,7 @@
       loadingOverlay.style.display = 'flex';
       submitBtn.disabled = true;
       submitBtn.textContent = '분석 중…';
+      window.PsfSurvey?.setBusy(true);
 
       fetch('/api/predict', {
         method: 'POST',
@@ -1052,9 +1103,10 @@
         .catch(error => {
           console.error('Error:', error);
           loadingOverlay.style.display = 'none';
-          showModal('분석 중 오류가 발생했습니다: ' + error.message);
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '분석하기';
+          submitBtn.textContent = '결과 확인하기';
+          window.PsfSurvey?.setBusy(false);
+          showModal('분석 중 오류가 발생했습니다: ' + error.message);
         });
     }
 
@@ -1062,24 +1114,29 @@
     function showModal(message) {
       document.getElementById('modalMessage').textContent = message;
       document.getElementById('customModal').style.display = 'flex';
+      window.PsfSurvey?.openDialog(document.getElementById('customModal'));
     }
 
     function closeModal() {
       document.getElementById('customModal').style.display = 'none';
+      window.PsfSurvey?.closeDialog();
     }
 
     function selectRole(btn) {
       const role = btn.dataset.role; //관제사
-      sessionStorage.setItem("selectedRole", role);
+      try { sessionStorage.setItem("selectedRole", role); } catch (_) { /* The form remains usable without storage. */ }
 
       document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+      window.PsfSurvey?.refresh();
     }
 
     function setSelectValue(selector, value) {
       const el = document.querySelector(selector);
       if (!el) return;
-      el.value = value;
+      // Example selections can use stable condition codes, independent of display order.
+      const option = Array.from(el.options).find(item => item.dataset.conditionCode === value);
+      el.value = option ? option.value : value;
       el.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
@@ -1091,12 +1148,14 @@
       if (!scenarioOverlay) return;
       scenarioOverlay.classList.add("is-open");
       scenarioOverlay.setAttribute("aria-hidden", "false");
+      window.PsfSurvey?.openDialog(scenarioOverlay);
     }
 
     function closeScenarioOverlay() {
       if (!scenarioOverlay) return;
       scenarioOverlay.classList.remove("is-open");
       scenarioOverlay.setAttribute("aria-hidden", "true");
+      if (window.PsfSurvey?.activeDialog === scenarioOverlay) window.PsfSurvey.closeDialog();
     }
 
     if (scenarioTrigger) {
@@ -1126,7 +1185,7 @@
         //PSF1 - 시간/피로
         "#worktimeSelect": "room3",
         "#workhourSelect": "room3",
-        "#sleeptimeSelect": "room1",
+        "#sleeptimeSelect": "F.1.S.3.1",
         "#workpermissiontimeSelect": "room3",
         "#workinghoursSelect": "room3",
 
@@ -1207,7 +1266,7 @@
         //PSF1 - 시간/피로
         "#worktimeSelect": "room2",
         "#workhourSelect": "room2",
-        "#sleeptimeSelect": "room2",
+        "#sleeptimeSelect": "F.1.S.3.2",
         "#workpermissiontimeSelect": "room2",
         "#workinghoursSelect": "room2",
 
@@ -1288,7 +1347,7 @@
         //PSF1 - 시간/피로
         "#worktimeSelect": "room1",
         "#workhourSelect": "room1",
-        "#sleeptimeSelect": "room3",
+        "#sleeptimeSelect": "F.1.S.3.3",
         "#workpermissiontimeSelect": "room1",
         "#workinghoursSelect": "room1",
 
@@ -1363,6 +1422,8 @@
       });
     });
   </script>
+  <script src="/static/date-time.js"></script>
+  <script src="/static/input-ux.js"></script>
 
 </body>
 
